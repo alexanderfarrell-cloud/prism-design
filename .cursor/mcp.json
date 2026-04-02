@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {}
+    },
+
+    "modus-docs": {
+      "command": "npx",
+      "args": ["-y", "@julianoczkowski/mcp-modus"]
+    },
+    "figma": {
+      "url": "http://127.0.0.1:3845/mcp"
+    },
+    "ado": {
+      "command": "npx",
+      "args": ["-y", "@azure-devops/mcp", "ViewpointVSO", "-d", "core", "search", "work", "work-items"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}

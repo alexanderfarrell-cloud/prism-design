@@ -1,0 +1,142 @@
+---
+description: Payroll prototype page directory structure and conventions
+globs: ["src/pages/payroll/**"]
+alwaysApply: false
+---
+
+# Payroll Page Structure
+
+All payroll prototype pages live under `src/pages/payroll/`. This consolidated structure mirrors the app's sidebar navigation where "Payroll" is a top-level section with sub-items underneath.
+
+## Directory Layout
+
+```
+src/pages/payroll/
+  PayrollHomePage.tsx              # /payroll
+  PayrollTaxSettingsPage.tsx       # /payroll/tax-settings
+  PayrollCompliancePage.tsx        # /payroll/compliance
+  PayrollDocumentsPage.tsx         # /payroll/documents
+  PayrollLaborClassesPage.tsx      # /payroll/labor-classes
+  employees/                       # slug: payroll-employees
+    PayrollEmployeesPage.tsx         # /payroll/employees (list)
+    PayrollEmployeeDetailsPage.tsx   # /payroll/employees/:employeeId
+    PayrollEmployeeSectionPage.tsx   # /payroll/employees/:employeeId/:sectionId (catch-all)
+    sections/
+      PersonalInfoPage.tsx           # /payroll/employees/:employeeId/personal-info
+      LaborTypePage.tsx              # /payroll/employees/:employeeId/labor-type
+      PayTypePage.tsx                # /payroll/employees/:employeeId/pay-type
+      TimecardPage.tsx               # /payroll/employees/:employeeId/timecard
+  timesheets/                      # slug: payroll-timesheets
+    TimecardDetailPage.tsx           # /payroll/timesheets/:employeeId/:dayIndex
+    AddShiftPage.tsx                 # /payroll/timesheets/:employeeId/add-shift
+  onboarding/                      # slug: payroll-onboarding
+    PayrollOnboardingPage.tsx        # /payroll/setup
+    WizardStepLayout.tsx
+    WizardHeader.tsx
+    WizardFooter.tsx
+    steps/
+      WelcomeStep.tsx
+      CompanyInfoStep.tsx
+      TaxSetupStep.tsx
+      BankAccountStep.tsx
+      PayScheduleStep.tsx
+      AddEmployeeStep.tsx
+      ReviewStep.tsx
+```
+
+## Three Tiers
+
+### Tier 1: Simple pages at `payroll/` root
+
+Single `.tsx` files that correspond to sidebar items without sub-navigation.
+
+- Place directly in `src/pages/payroll/`
+- Prefix with `Payroll` for clarity: `PayrollTaxSettingsPage.tsx`
+- Pipeline slug: `payroll`
+- Route pattern: `payroll/<kebab-name>`
+
+**When to use:** The page is self-contained with no child pages, sub-steps, or shared components.
+
+### Tier 2: Feature subfolders at `payroll/<feature>/`
+
+Subdirectories for features that have multiple related pages or complex internal structure.
+
+- Use a short, lowercase folder name: `employees/`, `timesheets/`, `onboarding/`
+- Pipeline slug: `payroll-<feature>` (e.g., `payroll-employees`)
+- Route pattern: `payroll/<feature>/...`
+
+**When to use:** The feature has 2+ pages, or it contains wizard steps, section pages, or shared layout components.
+
+### Tier 3: Deep nesting at `payroll/<feature>/<group>/`
+
+Sub-groups within a feature for organizing related page variants.
+
+- Use for logical groupings like `sections/` under employees
+- Pipeline slug: rolls up to the depth-2 parent (e.g., files in `employees/sections/` get slug `payroll-employees`)
+- These pages share routes with their parent feature
+
+**When to use:** A feature has enough pages that a flat list becomes hard to scan. Keep nesting to one extra level; avoid `payroll/employees/sections/tabs/`.
+
+## Adding a New Payroll Page
+
+### Simple page (Tier 1)
+
+1. Create `src/pages/payroll/PayrollNewFeaturePage.tsx`
+2. Add import and route in `src/App.tsx`:
+
+```tsx
+import PayrollNewFeaturePage from "./pages/payroll/PayrollNewFeaturePage";
+
+<Route path="payroll/new-feature" element={<PayrollNewFeaturePage />} />
+```
+
+### Feature with subpages (Tier 2)
+
+1. Create folder `src/pages/payroll/benefits/`
+2. Add entry page `src/pages/payroll/benefits/PayrollBenefitsPage.tsx`
+3. Add any child pages in the same folder
+4. Add imports and routes in `src/App.tsx`:
+
+```tsx
+import PayrollBenefitsPage from "./pages/payroll/benefits/PayrollBenefitsPage";
+import BenefitDetailsPage from "./pages/payroll/benefits/BenefitDetailsPage";
+
+<Route path="payroll/benefits" element={<PayrollBenefitsPage />} />
+<Route path="payroll/benefits/:benefitId" element={<BenefitDetailsPage />} />
+```
+
+### Wizard page (Tier 2 + wizard conventions)
+
+1. Create folder `src/pages/payroll/new-wizard/`
+2. Follow the wizard structure convention: entry page + layout components at root, steps in `steps/`
+3. The onboarding wizard under `payroll/onboarding/` is the reference implementation
+
+## Pipeline Slug Reference
+
+| File location | Pipeline slug |
+|---------------|---------------|
+| `payroll/PayrollHomePage.tsx` | `payroll` |
+| `payroll/PayrollTaxSettingsPage.tsx` | `payroll` |
+| `payroll/employees/PayrollEmployeesPage.tsx` | `payroll-employees` |
+| `payroll/employees/sections/PersonalInfoPage.tsx` | `payroll-employees` |
+| `payroll/timesheets/TimecardDetailPage.tsx` | `payroll-timesheets` |
+| `payroll/onboarding/PayrollOnboardingPage.tsx` | `payroll-onboarding` |
+| `payroll/onboarding/steps/WelcomeStep.tsx` | `payroll-onboarding` |
+
+Slugs are derived from the first 2 directory segments under `src/pages/`, joined with `-`. Files deeper than 2 levels roll up to their depth-2 parent slug.
+
+## Naming Conventions
+
+- **Tier 1 pages** (payroll root): Prefix with `Payroll` -- `PayrollTaxSettingsPage.tsx`, `PayrollCompliancePage.tsx`
+- **Tier 2 entry pages**: Prefix with `Payroll` -- `PayrollEmployeesPage.tsx`, `PayrollOnboardingPage.tsx`
+- **Tier 3 section/detail pages**: No prefix needed -- `PersonalInfoPage.tsx`, `TimecardPage.tsx`, `AddShiftPage.tsx`
+- **Wizard steps**: Use `Step` suffix -- `WelcomeStep.tsx`, `CompanyInfoStep.tsx`
+- **Layout/shared components**: Descriptive name, no suffix requirement -- `WizardHeader.tsx`, `WizardStepLayout.tsx`
+
+## Do Not
+
+- Place payroll pages outside `src/pages/payroll/` -- all payroll prototypes belong here
+- Create `payroll-employees/` or `payroll-onboarding/` as top-level `src/pages/` folders -- use `payroll/employees/` and `payroll/onboarding/` instead
+- Nest deeper than 3 levels (e.g., `payroll/employees/sections/tabs/`) -- keep it flat within `sections/`
+- Create a page without a corresponding route in `App.tsx`
+- Use generic filenames like `Page.tsx` or `Index.tsx`

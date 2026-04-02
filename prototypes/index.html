@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pay Schedule Setup — Payroll Scheduling & Calendar Logic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0f1419;
+      --bg-secondary: #1a2332;
+      --bg-tertiary: #243044;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b9cb3;
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --border: #2d3a4d;
+      --pay-period: rgba(59, 130, 246, 0.25);
+      --deadline: #f59e0b;
+      --payday: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .app {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    header p {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .wizard-steps {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .step {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .step.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .step.completed {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .panel {
+      display: none;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px solid var(--border);
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .form-group .hint {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    select, input[type="date"], input[type="text"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .segmented-control {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .segmented-option {
+      flex: 1;
+      min-width: 140px;
+      padding: 1rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .segmented-option:hover {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .segmented-option.selected {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.2);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .segmented-option.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      position: relative;
+    }
+
+    .segmented-option.disabled::after {
+      content: 'Coming soon — Beta';
+      position: absolute;
+      bottom: 0.5rem;
+      left: 1rem;
+      right: 1rem;
+      font-size: 0.7rem;
+      color: var(--warning);
+    }
+
+    .segmented-option .title {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .segmented-option .desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .advisory {
+      padding: 1rem 1.25rem;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--warning);
+      border-radius: 8px;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .advisory-icon {
+      color: var(--warning);
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .advisory a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .advisory a:hover {
+      text-decoration: underline;
+    }
+
+    .advisory-dismiss {
+      margin-top: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: transparent;
+      border: 1px solid var(--warning);
+      color: var(--warning);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .validation-error {
+      padding: 1rem 1.25rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--error);
+      border-radius: 8px;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #fca5a5;
+    }
+
+    .deadline-display {
+      padding: 1rem 1.25rem;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-top: 1rem;
+      border-left: 4px solid var(--accent);
+    }
+
+    .summary-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 0.75rem;
+    }
+
+    .calendar-container {
+      margin-top: 1.5rem;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 1.25rem;
+      overflow-x: auto;
+    }
+
+    .calendar {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .calendar th {
+      padding: 0.5rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .calendar td {
+      padding: 0.5rem;
+      text-align: center;
+      min-width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 6px;
+    }
+
+    .calendar td.other-month {
+      color: var(--text-secondary);
+      opacity: 0.5;
+    }
+
+    .calendar td.pay-period {
+      background: var(--pay-period);
+    }
+
+    .calendar td.deadline {
+      background: rgba(245, 158, 11, 0.3);
+      font-weight: 600;
+      color: var(--deadline);
+    }
+
+    .calendar td.payday {
+      background: rgba(34, 197, 94, 0.3);
+      font-weight: 600;
+      color: var(--payday);
+    }
+
+    .calendar td.pay-period.payday {
+      background: linear-gradient(135deg, var(--pay-period) 50%, rgba(34, 197, 94, 0.3) 50%);
+    }
+
+    .calendar-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .legend-dot.period { background: var(--pay-period); }
+    .legend-dot.deadline { background: rgba(245, 158, 11, 0.5); }
+    .legend-dot.payday { background: rgba(34, 197, 94, 0.5); }
+
+    .preview-section {
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .preview-header {
+      padding: 1rem 1.25rem;
+      background: var(--bg-tertiary);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 500;
+    }
+
+    .preview-header:hover {
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .preview-body {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .preview-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .preview-row:last-child {
+      border-bottom: none;
+    }
+
+    .preview-row .label {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .loading::after {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--accent);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 1rem auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .state-selector {
+      margin-bottom: 1rem;
+    }
+
+    .state-selector label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .prototype-note {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 2rem;
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+    }
+
+    /* Front page */
+    .front-page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2rem 3rem;
+    }
+
+    .front-page h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .front-page .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+
+    .front-page section {
+      margin-bottom: 2rem;
+    }
+
+    .front-page h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .front-page p, .front-page li {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .front-page ul, .front-page ol {
+      margin-left: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .front-page ol {
+      padding-left: 0.5rem;
+    }
+
+    .front-page code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+      background: var(--bg-tertiary);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    .front-page table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+
+    .front-page th, .front-page td {
+      padding: 0.6rem 1rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+
+    .front-page th {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .front-page td {
+      color: var(--text-secondary);
+    }
+
+    .front-page .cta {
+      margin-top: 2.5rem;
+      text-align: center;
+    }
+
+    .btn-large {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+    }
+
+    /* Schedule tabs */
+    .schedule-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .schedule-tab {
+      flex: 1;
+      padding: 1rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .schedule-tab:hover {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .schedule-tab.active {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--accent);
+    }
+
+    .schedule-tab .badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      background: var(--success);
+      color: var(--bg-primary);
+      border-radius: 4px;
+      margin-left: 0.5rem;
+    }
+
+    .schedule-tab .badge.empty {
+      background: var(--text-secondary);
+    }
+
+    .add-schedule-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .add-schedule-row input {
+      flex: 1;
+      max-width: 240px;
+    }
+
+    .add-schedule-empty {
+      padding: 2rem;
+      text-align: center;
+      background: var(--bg-secondary);
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .add-schedule-empty p {
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    .schedule-tab .remove-btn {
+      margin-left: 0.5rem;
+      padding: 0.2rem 0.4rem;
+      font-size: 0.75rem;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .schedule-tab .remove-btn:hover {
+      color: var(--error);
+      background: rgba(239, 68, 68, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <!-- Front Page -->
+  <div id="front-page" class="front-page">
+    <h1>Payroll Scheduling & Calendar Logic — Explained</h1>
+    <p class="subtitle">A short primer for developers: what a pay schedule is, the key dates that drive it, and how the logic fits together.</p>
+
+    <section>
+      <h2>What is a Pay Schedule?</h2>
+      <p>A pay schedule is the configuration that defines <em>when</em> and <em>how often</em> employees get paid. It's the foundation for every payroll run. The schedule answers: What dates does this pay period cover? When is payday? When must payroll be submitted so paychecks arrive on time?</p>
+      <p>Construction companies often run different schedules for different groups—e.g., weekly for field crews (common in the industry) and bi-weekly for office staff. Each schedule is configured separately.</p>
+    </section>
+
+    <section>
+      <h2>Pay Frequency Summary</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Frequency</th>
+            <th>Periods/Year</th>
+            <th>Typical Use</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Weekly</strong></td>
+            <td>52</td>
+            <td>Field workers, hourly, manual</td>
+            <td>Period: Sun Apr 6 – Sat Apr 12 → Check: Fri Apr 17</td>
+          </tr>
+          <tr>
+            <td><strong>Bi-Weekly</strong></td>
+            <td>26</td>
+            <td>Office, salaried</td>
+            <td>Period: Mon Apr 7 – Sun Apr 20 → Check: Fri Apr 25</td>
+          </tr>
+          <tr>
+            <td><strong>Semi-Monthly</strong></td>
+            <td>24</td>
+            <td>Salaried</td>
+            <td>Period: Apr 1 – Apr 15 → Check: Apr 22; Apr 16 – Apr 30 → Check: May 7</td>
+          </tr>
+          <tr>
+            <td><strong>Monthly</strong></td>
+            <td>12</td>
+            <td>Executive, salaried</td>
+            <td>Period: Apr 1 – Apr 30 → Check: Apr 30</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Key Dates — Summary</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Definition</th>
+            <th>Derived From</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Period start</strong></td>
+            <td>First day of the pay period</td>
+            <td>Work week start + frequency + first period anchor</td>
+          </tr>
+          <tr>
+            <td><strong>Period end</strong></td>
+            <td>Last day of the pay period</td>
+            <td>Period start + frequency (7, 14, or month days)</td>
+          </tr>
+          <tr>
+            <td><strong>Check date (payday)</strong></td>
+            <td>When employees receive pay</td>
+            <td>User-selected; must be ≥ period end + ACH lead time</td>
+          </tr>
+          <tr>
+            <td><strong>Payroll deadline</strong></td>
+            <td>When payroll must be submitted</td>
+            <td>Check date − ACH lead time (business days)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p><span style="background: #fef08a; color: #1a1a1a; padding: 0.15rem 0.35rem; border-radius: 3px;">The first period start and first check date are the anchor.</span> All future periods are projected from these two. Change the anchor, and the entire calendar recalculates.</p>
+    </section>
+
+    <section>
+      <h2>How the Logic Comes Together</h2>
+      <ol>
+        <li><strong>Work week start</strong> — Defines the 7-day cycle for FLSA overtime. Overtime is calculated per work week; a misconfigured start day corrupts every overtime calc downstream.</li>
+        <li><strong>Pay frequency</strong> — Weekly, bi-weekly, semi-monthly, or monthly. Determines how period start/end dates are computed.</li>
+        <li><strong>First period + first check date</strong> — The anchor. All future periods are projected from these two dates.</li>
+        <li><strong>Payment speed (ACH lead time)</strong> — 2, 4, or 7 business days. Drives the payroll deadline: <code>deadline = check date − lead time</code>. If the check date is too soon after period end, the system blocks it (the "Friday Crunch" guardrail).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Outcomes Summary</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Element</th>
+            <th>What</th>
+            <th>Why</th>
+            <th>Outcome</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Pay frequency</strong></td>
+            <td>How often employees are paid</td>
+            <td>Drives period structure, compliance, admin burden</td>
+            <td>Correct period calculation; state compliance advisories</td>
+          </tr>
+          <tr>
+            <td><strong>Work week start</strong></td>
+            <td>Start day of 7-day FLSA cycle</td>
+            <td>OT is calculated per work week</td>
+            <td>Accurate overtime calculations</td>
+          </tr>
+          <tr>
+            <td><strong>First period + check date</strong></td>
+            <td>Anchor dates</td>
+            <td>All future periods derive from these</td>
+            <td>Projected calendar; correct deadlines</td>
+          </tr>
+          <tr>
+            <td><strong>Payment speed</strong></td>
+            <td>ACH lead time (2, 4, 7 days)</td>
+            <td>Banks need processing time</td>
+            <td>Payroll deadline; Friday Crunch guardrail</td>
+          </tr>
+          <tr>
+            <td><strong>Multiple schedules</strong></td>
+            <td>Named schedules per employee group</td>
+            <td>Field vs. office have different norms</td>
+            <td>Flexible configuration per workforce segment</td>
+          </tr>
+          <tr>
+            <td><strong>State compliance</strong></td>
+            <td>Advisory rules per state</td>
+            <td>Avoid labor law violations</td>
+            <td>Informed decisions; audit trail</td>
+          </tr>
+          <tr>
+            <td><strong>Holiday adjustment</strong></td>
+            <td>Shift check date to prior business day</td>
+            <td>ACH doesn't run on holidays/weekends</td>
+            <td>Paychecks arrive on valid processing days</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="cta">
+      <button class="btn btn-primary btn-large" onclick="enterSetup()">Get Started — Configure Pay Schedules</button>
+    </div>
+  </div>
+
+  <!-- Setup Flow (hidden initially) -->
+  <div id="setup-flow" class="app" style="display: none;">
+    <header>
+      <a href="#" onclick="returnToOverview(); return false;" style="font-size: 0.85rem; color: var(--text-secondary); text-decoration: none; margin-bottom: 0.5rem; display: inline-block;">← Back to overview</a>
+      <h1>Pay Schedule Setup</h1>
+      <p>Configure your company's pay frequency, work week, and payment schedule. This governs when employees are paid and how far in advance you must submit payroll.</p>
+    </header>
+
+    <div id="addScheduleEmpty" class="add-schedule-empty" style="display: none;">
+      <p>No pay schedules yet. Add one to get started.</p>
+      <div class="add-schedule-row">
+        <input type="text" id="newScheduleName" placeholder="e.g. Office, Field workers, Salaried..." maxlength="50" onkeydown="if(event.key==='Enter')addSchedule()">
+        <button class="btn btn-primary" onclick="addSchedule()">Add schedule</button>
+      </div>
+    </div>
+
+    <div id="scheduleTabsContainer" style="display: none;">
+      <div class="schedule-tabs" id="scheduleTabs"></div>
+      <div class="add-schedule-row" style="margin-top: 0.75rem;">
+        <input type="text" id="newScheduleNameExisting" placeholder="New schedule name..." maxlength="50" style="max-width: 200px;" onkeydown="if(event.key==='Enter')addSchedule()">
+        <button class="btn btn-secondary" onclick="addSchedule()">+ Add another schedule</button>
+      </div>
+    </div>
+
+    <div id="wizardContainer" style="display: none;">
+    <div class="wizard-steps">
+      <div class="step active" data-step="1">1. Frequency & Work Week</div>
+      <div class="step" data-step="2">2. Date Selection & Calendar</div>
+    </div>
+
+    <!-- Panel 1: Frequency, Work Week, Payment Speed -->
+    <div id="panel-1" class="panel active">
+      <div class="form-group state-selector">
+        <label>Company Primary Payroll State (for compliance advisory demo)</label>
+        <select id="companyState">
+          <option value="TX">Texas (no advisory)</option>
+          <option value="NY">New York</option>
+          <option value="CA">California</option>
+          <option value="PA">Pennsylvania</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Pay Frequency</label>
+        <div class="segmented-control" id="frequencyOptions">
+          <div class="segmented-option" data-value="WEEKLY">
+            <span class="title">Weekly</span>
+            <span class="desc">Most common for field crews</span>
+          </div>
+          <div class="segmented-option" data-value="BIWEEKLY">
+            <span class="title">Bi-Weekly</span>
+            <span class="desc">Every other week</span>
+          </div>
+          <div class="segmented-option disabled" data-value="SEMIMONTHLY">
+            <span class="title">Semi-Monthly</span>
+            <span class="desc">Twice per month — Coming soon at Beta</span>
+          </div>
+          <div class="segmented-option" data-value="MONTHLY">
+            <span class="title">Monthly</span>
+            <span class="desc">Once per month</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="stateAdvisory" class="advisory" style="display: none;"></div>
+
+      <div class="form-group">
+        <label>Work Week Start Day</label>
+        <select id="workWeekStart">
+          <option value="">Select a day...</option>
+          <option value="SUN">Sunday</option>
+          <option value="MON">Monday</option>
+          <option value="TUE">Tuesday</option>
+          <option value="WED">Wednesday</option>
+          <option value="THU">Thursday</option>
+          <option value="FRI">Friday</option>
+          <option value="SAT">Saturday</option>
+        </select>
+        <p class="hint">Used for accurate overtime calculations (FLSA).</p>
+      </div>
+
+      <div class="form-group">
+        <label>Payment Speed (ACH Lead Time)</label>
+        <div class="segmented-control" id="paymentSpeedOptions">
+          <div class="segmented-option" data-value="2">
+            <span class="title">2-day ACH</span>
+            <span class="desc">Fastest — submit 2 business days before payday</span>
+          </div>
+          <div class="segmented-option selected" data-value="4">
+            <span class="title">4-day ACH</span>
+            <span class="desc">Standard — submit 4 business days before payday</span>
+          </div>
+          <div class="segmented-option" data-value="7">
+            <span class="title">7-day ACH</span>
+            <span class="desc">Economy — submit 7 business days before payday</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="saveAndExit()">Save and Exit</button>
+        <button class="btn btn-primary" id="nextToPart2" onclick="goToPart2()" disabled>Next: Date Selection →</button>
+      </div>
+    </div>
+
+    <!-- Panel 2: Date Selection, Calendar, Validation -->
+    <div id="panel-2" class="panel">
+      <div class="form-group">
+        <label>When does your first pay period begin?</label>
+        <input type="date" id="firstPeriodStart" onchange="debouncedPreview()">
+      </div>
+
+      <div class="form-group">
+        <label>When will employees receive their first paycheck?</label>
+        <input type="date" id="firstCheckDate" onchange="debouncedPreview()">
+      </div>
+
+      <div id="deadlineDisplay" class="deadline-display" style="display: none;"></div>
+      <div id="summaryText" class="summary-text" style="display: none;"></div>
+
+      <div id="validationError" class="validation-error" style="display: none;"></div>
+
+      <div id="calendarContainer" class="calendar-container" style="display: none;">
+        <div id="calendarLoading" class="loading" style="display: none;"></div>
+        <table class="calendar" id="calendarTable"></table>
+        <div class="calendar-legend" id="calendarLegend"></div>
+      </div>
+
+      <div class="preview-section">
+        <div class="preview-header" onclick="togglePreview()">
+          <span>Preview upcoming payrolls</span>
+          <span id="previewChevron">▼</span>
+        </div>
+        <div class="preview-body" id="previewBody" style="display: none;">
+          <div id="previewRows"></div>
+          <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="expandPreview()" id="seeAllBtn">See all upcoming payrolls (12)</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="goToPart1()">← Back</button>
+        <button class="btn btn-primary" id="saveConfirm" onclick="saveAndConfirm()" disabled>Save changes</button>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="app prototype-note">
+    <strong>Prototype Note:</strong> This is a clickable prototype for the Payroll Scheduling & Calendar Logic feature (ADO Feature #677485). 
+    It simulates the UI flows from stories 681410, 681413, 681409, 681416, 681417. API calls are simulated client-side. 
+    Supports multiple named schedules—add and name each one (e.g. Office, Field, Salaried). Semi-Monthly is disabled at Alpha. State compliance advisory appears for NY, CA, PA. Friday Crunch Guardrail blocks invalid check dates.
+  </div>
+
+  <script>
+    // --- State ---
+    const defaultScheduleState = (name) => ({
+      name: name || 'New schedule',
+      frequency: null,
+      workWeekStartDay: null,
+      paymentSpeedDays: 4,
+      firstPeriodStartDate: null,
+      firstCheckDate: null,
+      advisoryDismissed: false,
+      previewCount: 3
+    });
+
+    const state = {
+      currentSchedule: null,
+      companyState: 'TX',
+      schedules: []
+    };
+
+    function getCurrentSchedule() {
+      return state.schedules.find(s => s.id === state.currentSchedule);
+    }
+
+    function generateId() {
+      return 'sched_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+    }
+
+    function saveCurrentFormToState() {
+      const s = getCurrentSchedule();
+      if (!s) return;
+      s.frequency = document.querySelector('#frequencyOptions .segmented-option.selected:not(.disabled)')?.dataset.value || null;
+      s.workWeekStartDay = document.getElementById('workWeekStart').value || null;
+      s.paymentSpeedDays = parseInt(document.querySelector('#paymentSpeedOptions .segmented-option.selected')?.dataset.value || '4', 10);
+      s.firstPeriodStartDate = document.getElementById('firstPeriodStart')?.value || null;
+      s.firstCheckDate = document.getElementById('firstCheckDate')?.value || null;
+    }
+
+    function loadScheduleIntoForm(schedule) {
+      if (!schedule) return;
+
+      document.querySelectorAll('#frequencyOptions .segmented-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.value === schedule.frequency && !opt.classList.contains('disabled'));
+      });
+      document.getElementById('workWeekStart').value = schedule.workWeekStartDay || '';
+      document.querySelectorAll('#paymentSpeedOptions .segmented-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.value === String(schedule.paymentSpeedDays));
+      });
+      const periodInput = document.getElementById('firstPeriodStart');
+      const checkInput = document.getElementById('firstCheckDate');
+      if (periodInput) periodInput.value = schedule.firstPeriodStartDate || '';
+      if (checkInput) checkInput.value = schedule.firstCheckDate || '';
+
+      updatePreview();
+      validatePart1();
+      renderScheduleTabs();
+    }
+
+    function renderScheduleTabs() {
+      const container = document.getElementById('scheduleTabs');
+      container.innerHTML = state.schedules.map(s => {
+        const configured = s.frequency && s.workWeekStartDay && s.firstPeriodStartDate && s.firstCheckDate;
+        const isActive = s.id === state.currentSchedule;
+        const canRemove = state.schedules.length > 1;
+        return `
+          <div class="schedule-tab ${isActive ? 'active' : ''}" data-schedule="${s.id}" onclick="switchSchedule('${s.id}')">
+            ${escapeHtml(s.name)}
+            <span class="badge ${configured ? '' : 'empty'}">${configured ? 'Configured' : 'Not configured'}</span>
+            ${canRemove ? `<button class="remove-btn" onclick="event.stopPropagation(); removeSchedule('${s.id}')" title="Remove schedule">×</button>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function addSchedule() {
+      const isFirstSchedule = state.schedules.length === 0;
+      const input = isFirstSchedule ? document.getElementById('newScheduleName') : document.getElementById('newScheduleNameExisting');
+      const name = (input?.value || '').trim();
+      if (!name) {
+        alert('Please enter a name for the schedule (e.g. Office, Field workers, Salaried).');
+        return;
+      }
+      if (state.schedules.length >= 10) {
+        alert('Maximum 10 schedules allowed.');
+        return;
+      }
+
+      const schedule = { id: generateId(), ...defaultScheduleState(name) };
+      state.schedules.push(schedule);
+      state.currentSchedule = schedule.id;
+
+      if (input) {
+        input.value = '';
+        input.placeholder = 'New schedule name...';
+      }
+
+      document.getElementById('addScheduleEmpty').style.display = 'none';
+      document.getElementById('scheduleTabsContainer').style.display = 'block';
+      document.getElementById('wizardContainer').style.display = 'block';
+
+      renderScheduleTabs();
+      loadScheduleIntoForm(schedule);
+      checkStateAdvisory();
+    }
+
+    function removeSchedule(id) {
+      if (state.schedules.length <= 1) return;
+      state.schedules = state.schedules.filter(s => s.id !== id);
+      if (state.currentSchedule === id) {
+        state.currentSchedule = state.schedules[0]?.id || null;
+      }
+      if (state.schedules.length === 0) {
+        document.getElementById('addScheduleEmpty').style.display = 'block';
+        document.getElementById('scheduleTabsContainer').style.display = 'none';
+        document.getElementById('wizardContainer').style.display = 'none';
+      } else {
+        renderScheduleTabs();
+        loadScheduleIntoForm(getCurrentSchedule());
+      }
+    }
+
+    function enterSetup() {
+      document.getElementById('front-page').style.display = 'none';
+      document.getElementById('setup-flow').style.display = 'block';
+
+      if (state.schedules.length === 0) {
+        document.getElementById('addScheduleEmpty').style.display = 'block';
+        document.getElementById('scheduleTabsContainer').style.display = 'none';
+        document.getElementById('wizardContainer').style.display = 'none';
+      } else {
+        document.getElementById('addScheduleEmpty').style.display = 'none';
+        document.getElementById('scheduleTabsContainer').style.display = 'block';
+        document.getElementById('wizardContainer').style.display = 'block';
+        renderScheduleTabs();
+        loadScheduleIntoForm(getCurrentSchedule());
+      }
+    }
+
+    function returnToOverview() {
+      document.getElementById('setup-flow').style.display = 'none';
+      document.getElementById('front-page').style.display = 'block';
+      saveCurrentFormToState();
+    }
+
+    function switchSchedule(scheduleId) {
+      saveCurrentFormToState();
+      state.currentSchedule = scheduleId;
+      renderScheduleTabs();
+      loadScheduleIntoForm(getCurrentSchedule());
+      checkStateAdvisory();
+    }
+
+    const DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+    // --- State Compliance Rules (Story 681416) ---
+    const STATE_RULES = {
+      NY: {
+        BIWEEKLY: 'New York requires weekly pay for manual workers, which includes most construction trades. If your workforce includes hourly or trade employees, weekly pay is strongly recommended. See NY Labor Law §198-c.',
+        MONTHLY: 'New York does not permit monthly pay for manual workers. Weekly pay is required.',
+        link: 'https://dol.ny.gov/'
+      },
+      CA: {
+        MONTHLY: 'California requires most employees to be paid at least twice per month. Monthly pay may not be compliant for hourly workers. See CA Labor Code §204.',
+        link: 'https://www.dir.ca.gov/'
+      },
+      PA: {
+        MONTHLY: 'Pennsylvania requires employees to be paid at least semi-monthly. Monthly pay is not compliant.',
+        link: 'https://www.dli.pa.gov/'
+      }
+    };
+
+    // --- Simulated Preview API (Story 681409) ---
+    function simulatePreviewAPI() {
+      const s = getCurrentSchedule();
+      if (!s) return { summaryText: null, periods: [], validationError: null };
+      const { frequency, workWeekStartDay, firstPeriodStartDate, firstCheckDate, paymentSpeedDays } = s;
+      if (!frequency || !firstCheckDate || !firstPeriodStartDate) {
+        return { summaryText: null, periods: [], validationError: null };
+      }
+
+      // Friday Crunch Guardrail (Story 681413)
+      const periodEnd = getPeriodEnd(firstPeriodStartDate, frequency);
+      const minCheckDate = addBusinessDays(periodEnd, paymentSpeedDays);
+      if (new Date(firstCheckDate) < new Date(minCheckDate)) {
+        return {
+          summaryText: null,
+          periods: [],
+          validationError: `Check date ${formatDate(firstCheckDate)} does not allow ${paymentSpeedDays} business days of ACH lead time after period end ${formatDate(periodEnd)}. Earliest valid check date: ${formatDate(minCheckDate)}.`
+        };
+      }
+
+      const periods = [];
+      let currentStart = new Date(firstPeriodStartDate);
+      const count = s.previewCount;
+      const firstCheck = new Date(firstCheckDate);
+
+      for (let i = 0; i < count; i++) {
+        const startStr = currentStart.toISOString().split('T')[0];
+        const periodEndDate = getPeriodEnd(startStr, frequency);
+        let checkDate;
+        if (i === 0) {
+          checkDate = new Date(firstCheckDate);
+        } else if (frequency === 'WEEKLY') {
+          checkDate = new Date(firstCheck);
+          checkDate.setDate(checkDate.getDate() + 7 * i);
+        } else if (frequency === 'BIWEEKLY') {
+          checkDate = new Date(firstCheck);
+          checkDate.setDate(checkDate.getDate() + 14 * i);
+        } else if (frequency === 'MONTHLY') {
+          checkDate = new Date(firstCheck.getFullYear(), firstCheck.getMonth() + i, firstCheck.getDate());
+        }
+        const checkStr = checkDate.toISOString().split('T')[0];
+        const deadline = addBusinessDays(checkStr, -paymentSpeedDays);
+        periods.push({
+          periodIndex: i + 1,
+          periodStartDate: startStr,
+          periodEndDate,
+          checkDate: checkStr,
+          payrollDeadlineDate: deadline
+        });
+        currentStart = addPeriodOffset(currentStart, frequency);
+      }
+
+      let summaryText = '';
+      if (frequency === 'WEEKLY') summaryText = 'Employees will be paid every Friday';
+      else if (frequency === 'BIWEEKLY') summaryText = `Employees will be paid every other ${DAY_NAMES[new Date(firstCheckDate).getDay()]}, starting ${formatDate(firstCheckDate)}`;
+      else if (frequency === 'MONTHLY') summaryText = `Employees will be paid on the ${new Date(firstCheckDate).getDate()}th each month`;
+
+      return { summaryText, periods, validationError: null };
+    }
+
+    function getPeriodEnd(startDate, freq) {
+      const d = new Date(startDate);
+      if (freq === 'WEEKLY') {
+        d.setDate(d.getDate() + 6);
+      } else if (freq === 'BIWEEKLY') {
+        d.setDate(d.getDate() + 13);
+      } else if (freq === 'MONTHLY') {
+        d.setMonth(d.getMonth() + 1);
+        d.setDate(0);
+      }
+      return d.toISOString().split('T')[0];
+    }
+
+    function addBusinessDays(dateStr, days) {
+      const d = new Date(dateStr);
+      let remaining = Math.abs(days);
+      const sign = days >= 0 ? 1 : -1;
+      while (remaining > 0) {
+        d.setDate(d.getDate() + sign);
+        const day = d.getDay();
+        if (day !== 0 && day !== 6) remaining--;
+      }
+      return d.toISOString().split('T')[0];
+    }
+
+    function addPeriodOffset(date, freq) {
+      const d = new Date(date);
+      if (freq === 'WEEKLY') d.setDate(d.getDate() + 7);
+      else if (freq === 'BIWEEKLY') d.setDate(d.getDate() + 14);
+      else if (freq === 'MONTHLY') d.setMonth(d.getMonth() + 1);
+      return d;
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // --- UI Updates ---
+    let debounceTimer;
+    function debouncedPreview() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(updatePreview, 200);
+    }
+
+    function updatePreview() {
+      const s = getCurrentSchedule();
+      s.firstPeriodStartDate = document.getElementById('firstPeriodStart')?.value || null;
+      s.firstCheckDate = document.getElementById('firstCheckDate')?.value || null;
+
+      const result = simulatePreviewAPI();
+
+      const errEl = document.getElementById('validationError');
+      const deadlineEl = document.getElementById('deadlineDisplay');
+      const summaryEl = document.getElementById('summaryText');
+      const calendarEl = document.getElementById('calendarContainer');
+      const saveBtn = document.getElementById('saveConfirm');
+
+      if (result.validationError) {
+        errEl.textContent = result.validationError;
+        errEl.style.display = 'block';
+        deadlineEl.style.display = 'none';
+        summaryEl.style.display = 'none';
+        calendarEl.style.display = 'none';
+        saveBtn.disabled = true;
+        return;
+      }
+
+      errEl.style.display = 'none';
+
+      if (result.periods.length > 0) {
+        const first = result.periods[0];
+        deadlineEl.textContent = `Your payroll deadline: ${formatDate(first.payrollDeadlineDate)}`;
+        deadlineEl.style.display = 'block';
+        summaryEl.textContent = result.summaryText;
+        summaryEl.style.display = 'block';
+        renderCalendar(result.periods[0]);
+        calendarEl.style.display = 'block';
+        renderPreviewRows(result.periods);
+        saveBtn.disabled = false;
+      } else {
+        deadlineEl.style.display = 'none';
+        summaryEl.style.display = 'none';
+        calendarEl.style.display = 'none';
+        saveBtn.disabled = true;
+      }
+    }
+
+    function renderCalendar(period) {
+      const start = new Date(period.periodStartDate);
+      const end = new Date(period.periodEndDate);
+      const checkDate = period.checkDate;
+      const deadline = period.payrollDeadlineDate;
+
+      const year = start.getFullYear();
+      const month = start.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDayOfWeek = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+
+      let html = '<thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead><tbody><tr>';
+      let dayCount = 1;
+      let cells = 0;
+
+      for (let i = 0; i < startDayOfWeek; i++) {
+        const prevMonth = new Date(year, month, -(startDayOfWeek - i - 1));
+        html += `<td class="other-month">${prevMonth.getDate()}</td>`;
+        cells++;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const isInPeriod = dateStr >= period.periodStartDate && dateStr <= period.periodEndDate;
+        const isDeadline = dateStr === deadline;
+        const isPayday = dateStr === checkDate;
+
+        let cls = '';
+        if (isInPeriod) cls += ' pay-period';
+        if (isDeadline) cls += ' deadline';
+        if (isPayday) cls += ' payday';
+
+        html += `<td class="${cls.trim()}" title="${dateStr}">${d}</td>`;
+        cells++;
+        if (cells % 7 === 0) html += '</tr><tr>';
+      }
+
+      const remaining = 7 - (cells % 7);
+      if (remaining < 7) {
+        for (let i = 1; i <= remaining; i++) {
+          html += `<td class="other-month">${i}</td>`;
+        }
+      }
+      html += '</tr></tbody>';
+
+      document.getElementById('calendarTable').innerHTML = html;
+      document.getElementById('calendarLegend').innerHTML = `
+        <span class="legend-item"><span class="legend-dot period"></span> Pay period</span>
+        <span class="legend-item"><span class="legend-dot deadline"></span> Payroll deadline: ${formatDate(deadline)}</span>
+        <span class="legend-item"><span class="legend-dot payday"></span> Payday: ${formatDate(checkDate)}</span>
+      `;
+    }
+
+    function renderPreviewRows(periods) {
+      const html = periods.map(p => `
+        <div class="preview-row">
+          <div><span class="label">Period</span><br>${formatDate(p.periodStartDate)} – ${formatDate(p.periodEndDate)}</div>
+          <div><span class="label">Check date</span><br>${formatDate(p.checkDate)}</div>
+          <div><span class="label">Payroll deadline</span><br>${formatDate(p.payrollDeadlineDate)}</div>
+        </div>
+      `).join('');
+      document.getElementById('previewRows').innerHTML = html;
+    }
+
+    function togglePreview() {
+      const body = document.getElementById('previewBody');
+      const chevron = document.getElementById('previewChevron');
+      if (body.style.display === 'none') {
+        body.style.display = 'block';
+        chevron.textContent = '▲';
+        getCurrentSchedule().previewCount = 3;
+        updatePreview();
+      } else {
+        body.style.display = 'none';
+        chevron.textContent = '▼';
+      }
+    }
+
+    function expandPreview() {
+      getCurrentSchedule().previewCount = 12;
+      updatePreview();
+      document.getElementById('seeAllBtn').style.display = 'none';
+    }
+
+    // --- Part 1 Handlers ---
+    document.getElementById('frequencyOptions').addEventListener('click', (e) => {
+      const opt = e.target.closest('.segmented-option');
+      if (!opt || opt.classList.contains('disabled')) return;
+      document.querySelectorAll('#frequencyOptions .segmented-option:not(.disabled)').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      getCurrentSchedule().frequency = opt.dataset.value;
+      getCurrentSchedule().advisoryDismissed = false;
+      checkStateAdvisory();
+      validatePart1();
+    });
+
+    document.getElementById('workWeekStart').addEventListener('change', (e) => {
+      getCurrentSchedule().workWeekStartDay = e.target.value || null;
+      validatePart1();
+    });
+
+    document.getElementById('paymentSpeedOptions').addEventListener('click', (e) => {
+      const opt = e.target.closest('.segmented-option');
+      if (!opt) return;
+      document.querySelectorAll('#paymentSpeedOptions .segmented-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      getCurrentSchedule().paymentSpeedDays = parseInt(opt.dataset.value, 10);
+      validatePart1();
+      if (getCurrentSchedule().firstCheckDate) debouncedPreview();
+    });
+
+    document.getElementById('companyState').addEventListener('change', (e) => {
+      state.companyState = e.target.value;
+      getCurrentSchedule().advisoryDismissed = false;
+      checkStateAdvisory();
+    });
+
+    function checkStateAdvisory() {
+      const advisoryEl = document.getElementById('stateAdvisory');
+      const s = getCurrentSchedule();
+      if (s.advisoryDismissed || !s.frequency) {
+        advisoryEl.style.display = 'none';
+        return;
+      }
+
+      const rules = STATE_RULES[state.companyState];
+      if (!rules) {
+        advisoryEl.style.display = 'none';
+        return;
+      }
+
+      const message = rules[s.frequency];
+      if (!message) {
+        advisoryEl.style.display = 'none';
+        return;
+      }
+
+      advisoryEl.innerHTML = `
+        <span class="advisory-icon">⚠</span>
+        <div>
+          <strong>State compliance advisory</strong><br>
+          ${message}
+          ${rules.link ? `<br><a href="${rules.link}" target="_blank">Learn more</a>` : ''}
+          <div><button class="advisory-dismiss" onclick="dismissAdvisory()">I understand, continue with ${s.frequency === 'BIWEEKLY' ? 'Bi-Weekly' : 'Monthly'}</button></div>
+        </div>
+      `;
+      advisoryEl.style.display = 'flex';
+    }
+
+    function dismissAdvisory() {
+      getCurrentSchedule().advisoryDismissed = true;
+      document.getElementById('stateAdvisory').style.display = 'none';
+    }
+
+    function validatePart1() {
+      const s = getCurrentSchedule();
+      const valid = s.frequency && s.frequency !== 'SEMIMONTHLY' && s.workWeekStartDay;
+      document.getElementById('nextToPart2').disabled = !valid;
+    }
+
+    function goToPart2() {
+      document.getElementById('panel-1').classList.remove('active');
+      document.getElementById('panel-2').classList.add('active');
+      document.querySelector('[data-step="1"]').classList.remove('active');
+      document.querySelector('[data-step="1"]').classList.add('completed');
+      document.querySelector('[data-step="2"]').classList.add('active');
+
+      const s = getCurrentSchedule();
+      const today = new Date();
+      if (!s.firstPeriodStartDate) {
+        const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('firstPeriodStart').value = firstOfMonth.toISOString().split('T')[0];
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        document.getElementById('firstCheckDate').value = lastDay.toISOString().split('T')[0];
+      } else {
+        document.getElementById('firstPeriodStart').value = s.firstPeriodStartDate;
+        document.getElementById('firstCheckDate').value = s.firstCheckDate;
+      }
+      s.firstPeriodStartDate = document.getElementById('firstPeriodStart').value;
+      s.firstCheckDate = document.getElementById('firstCheckDate').value;
+      updatePreview();
+    }
+
+    function goToPart1() {
+      document.getElementById('panel-2').classList.remove('active');
+      document.getElementById('panel-1').classList.add('active');
+      document.querySelector('[data-step="2"]').classList.remove('active');
+      document.querySelector('[data-step="1"]').classList.remove('completed');
+      document.querySelector('[data-step="1"]').classList.add('active');
+    }
+
+    function saveAndExit() {
+      saveCurrentFormToState();
+      const s = getCurrentSchedule();
+      const label = s ? s.name : 'Schedule';
+      alert(`"${label}" schedule saved as DRAFT. (Simulated PUT /schedules)`);
+      renderScheduleTabs();
+    }
+
+    function saveAndConfirm() {
+      saveCurrentFormToState();
+      const s = getCurrentSchedule();
+      const label = s ? s.name : 'Schedule';
+      alert(`"${label}" schedule saved and activated. (Simulated PUT /schedules + POST /activate)`);
+      renderScheduleTabs();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+# Cleanup branch preview on PR merge
+#
+# Removes the /branches/{slug}/ subdirectory and branches.json entry
+# from gh-pages when a PR is merged.
+#
+# Close-without-merge intentionally does NOT clean up because designers
+# may close a PR to restructure while still iterating on the branch.
+#
+# Part of the GitHub Pages deployment strategy:
+# - deploy-main.yml: production deploy
+# - branch-preview.yml: feature branch previews
+# - cleanup-merged-branch.yml: remove previews on PR merge (this file)
+# - cleanup-stale-previews.yml: weekly reconciliation safety net
+
+name: Cleanup merged branch preview
+
+on:
+  pull_request:
+    types: [closed]
+
+concurrency:
+  group: cleanup-merged-branch-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check gh-pages exists
+        id: check
+        run: |
+          if git ls-remote --exit-code --heads origin gh-pages > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "gh-pages branch does not exist, nothing to clean up."
+          fi
+
+      - name: Compute branch slug
+        if: steps.check.outputs.exists == 'true'
+        id: branch
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          SLUG=$(echo "$BRANCH" | sed 's/[^a-zA-Z0-9_.-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout gh-pages
+        if: steps.check.outputs.exists == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove branch subdirectory
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          rm -rf gh-pages/branches/${{ steps.branch.outputs.slug }}
+
+      - name: Update branches.json (remove entry)
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          MANIFEST="gh-pages/branches.json"
+          SLUG="${{ steps.branch.outputs.slug }}"
+          if [ -f "$MANIFEST" ]; then
+            jq --arg s "$SLUG" 'del(.[$s])' "$MANIFEST" > "${MANIFEST}.tmp" && mv "${MANIFEST}.tmp" "$MANIFEST"
+          fi
+
+      - name: Push changes
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "Remove merged branch ${{ steps.branch.outputs.slug }} preview"
+          git push origin gh-pages

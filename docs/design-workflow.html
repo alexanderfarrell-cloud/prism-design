@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design Workflow</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f7fa;
+      color: #1a2b3c;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a2b3c;
+      margin-bottom: 6px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #6b7c93;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    .legend-label {
+      font-size: 12px;
+      color: #6b7c93;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .badge-pm    { background: #0063a3; color: #fff; }
+    .badge-ux    { background: #1e8a44; color: #fff; }
+    .badge-uxpm  { background: #e58c00; color: #fff; }
+    .badge-all   { background: #e0e6ef; color: #4a5568; }
+    .badge-stu   { background: #4a5568; color: #fff; }
+
+    /* Flow */
+    .flow {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step-row {
+      display: flex;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    /* Connector column */
+    .connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      width: 40px;
+    }
+
+    .step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #0063a3;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 2px 8px rgba(0,99,163,0.25);
+    }
+
+    .connector-line {
+      width: 2px;
+      flex: 1;
+      background: #d1dae6;
+      margin: 4px 0;
+      min-height: 24px;
+    }
+
+    .arrow-tip {
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid #d1dae6;
+      margin-bottom: 4px;
+    }
+
+    /* Card */
+    .step-content {
+      flex: 1;
+      padding-bottom: 32px;
+    }
+
+    .step-content.last {
+      padding-bottom: 0;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e0e6ef;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-header-pm    { background: #e8f2fb; }
+    .card-header-ux    { background: #e8f7ed; }
+    .card-header-uxpm  { background: #fef6e4; }
+    .card-header-all   { background: #f0f3f7; }
+    .card-header-stu   { background: #eaecef; }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a2b3c;
+      margin-bottom: 3px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: #6b7c93;
+    }
+
+    .card-body {
+      padding: 16px 20px;
+    }
+
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .item {
+      background: #f5f7fa;
+      border: 1px solid #e0e6ef;
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .item-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a2b3c;
+    }
+
+    .item-sub {
+      font-size: 11px;
+      color: #6b7c93;
+    }
+
+    /* Footer note */
+    .footer-note {
+      margin-top: 28px;
+      padding: 14px 18px;
+      background: #e8f2fb;
+      border-radius: 8px;
+      border-left: 4px solid #0063a3;
+      font-size: 13px;
+      color: #3a5068;
+      line-height: 1.6;
+    }
+
+    .footer-note strong {
+      color: #0063a3;
+    }
+
+    /* Flywheel */
+    .flywheel-section {
+      position: relative;
+      border: 2px dashed rgba(0, 99, 163, 0.35);
+      border-radius: 16px;
+      margin: 0 -12px 16px -12px;
+      padding: 16px 12px 0 12px;
+      background: rgba(0, 99, 163, 0.025);
+    }
+
+    .flywheel-tag {
+      position: absolute;
+      top: -14px;
+      right: 20px;
+      background: #f5f7fa;
+      padding: 2px 12px;
+      border-radius: 20px;
+      border: 2px solid rgba(0, 99, 163, 0.35);
+      font-size: 11px;
+      font-weight: 700;
+      color: #0063a3;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .flywheel-tag-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .flywheel-return {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0 14px 64px;
+      color: rgba(0, 99, 163, 0.55);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .flywheel-return-line {
+      flex: 1;
+      border-top: 1.5px dashed rgba(0, 99, 163, 0.3);
+    }
+
+    .flywheel-return-arrow {
+      font-size: 14px;
+      color: #0063a3;
+      opacity: 0.6;
+    }
+
+    /* Print */
+    @media print {
+      body { background: #fff; padding: 20px; }
+      .card { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="page-header">
+      <div class="page-title">Design Workflow</div>
+      <div class="page-subtitle">Product development process — from requirements to production</div>
+      <div class="legend">
+        <span class="badge badge-pm">PM</span>
+        <span class="badge badge-ux">UX</span>
+        <span class="badge badge-uxpm">UX / PM</span>
+        <span class="badge badge-all">All</span>
+        <span class="badge badge-stu">STU</span>
+        <span class="legend-label">— responsible role per phase</span>
+      </div>
+    </div>
+
+    <div class="flow">
+
+      <div class="flywheel-section">
+        <div class="flywheel-tag"><span class="flywheel-tag-icon">↻</span> Flywheel</div>
+
+      <!-- Step 1 -->
+      <div class="step-row">
+        <div class="connector">
+          <div class="step-circle">1</div>
+          <div class="connector-line"></div>
+          <div class="arrow-tip"></div>
+        </div>
+        <div class="step-content">
+          <div class="card">
+            <div class="card-header card-header-pm">
+              <div>
+                <div class="card-title">PM Work</div>
+                <div class="card-desc">Upfront requirements and planning</div>
+              </div>
+              <span class="badge badge-pm">PM</span>
+            </div>
+            <div class="card-body">
+              <div class="items-grid">
+                <div class="item"><div class="item-label">Market Requirements Doc</div><div class="item-sub">MRD</div></div>
+                <div class="item"><div class="item-label">Product Requirements Doc</div><div class="item-sub">PRD</div></div>
+                <div class="item"><div class="item-label">Feature Backlog</div><div class="item-sub">~10 features</div></div>
+                <div class="item"><div class="item-label">User Journey Mapping</div><div class="item-sub">~5 journeys</div></div>
+                <div class="item"><div class="item-label">Sloppy Prototype</div><div class="item-sub">Quick sketches</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-row">
+        <div class="connector">
+          <div class="step-circle">2</div>
+          <div class="connector-line"></div>
+          <div class="arrow-tip"></div>
+        </div>
+        <div class="step-content">
+          <div class="card">
+            <div class="card-header card-header-ux">
+              <div>
+                <div class="card-title">Initial Design</div>
+                <div class="card-desc">Rapid prototyping and low-fidelity design</div>
+              </div>
+              <span class="badge badge-ux">UX</span>
+            </div>
+            <div class="card-body">
+              <div class="items-grid">
+                <div class="item"><div class="item-label">Rapid Prototyping</div><div class="item-sub">Fast iteration</div></div>
+                <div class="item"><div class="item-label">Lo-Fi Figma</div><div class="item-sub">Low fidelity</div></div>
+                <div class="item"><div class="item-label">Low Fidelity Proto</div><div class="item-sub">Click-through</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-row">
+        <div class="connector">
+          <div class="step-circle">3</div>
+          <div class="connector-line"></div>
+          <div class="arrow-tip"></div>
+        </div>
+        <div class="step-content">
+          <div class="card">
+            <div class="card-header card-header-uxpm">
+              <div>
+                <div class="card-title">Detailed Prototype</div>
+                <div class="card-desc">High-fidelity design and specifications</div>
+              </div>
+              <span class="badge badge-uxpm">UX / PM</span>
+            </div>
+            <div class="card-body">
+              <div class="items-grid">
+                <div class="item"><div class="item-label">Hi-Fi Design</div><div class="item-sub">Full fidelity</div></div>
+                <div class="item"><div class="item-label">Interaction Specs</div><div class="item-sub">All states covered</div></div>
+                <div class="item"><div class="item-label">Design Review</div><div class="item-sub">PM sign-off</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step-row">
+        <div class="connector">
+          <div class="step-circle">4</div>
+          <div class="connector-line"></div>
+          <div class="arrow-tip"></div>
+        </div>
+        <div class="step-content">
+          <div class="card">
+            <div class="card-header card-header-all">
+              <div>
+                <div class="card-title">Collaboration</div>
+                <div class="card-desc">Stakeholder review and branch setup</div>
+              </div>
+              <span class="badge badge-all">All</span>
+            </div>
+            <div class="card-body">
+              <div class="items-grid">
+                <div class="item"><div class="item-label">APO Review</div><div class="item-sub">E / F / S</div></div>
+                <div class="item"><div class="item-label">Reference Links</div><div class="item-sub">Docs &amp; assets</div></div>
+                <div class="item"><div class="item-label">Branch in lista-design</div><div class="item-sub">Feature branch</div></div>
+                <div class="item"><div class="item-label">Interactive Proto</div><div class="item-sub">Final review</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <div class="flywheel-return">
+          <div class="flywheel-return-line"></div>
+          <span class="flywheel-return-arrow">↑</span>
+          <span>Iterates back through the appropriate step</span>
+        </div>
+      </div><!-- /flywheel-section -->
+
+      <!-- Step 5 -->
+      <div class="step-row">
+        <div class="connector">
+          <div class="step-circle">5</div>
+        </div>
+        <div class="step-content last">
+          <div class="card">
+            <div class="card-header card-header-stu">
+              <div>
+                <div class="card-title">Check In to Main</div>
+                <div class="card-desc">Merge to main branch and publish</div>
+              </div>
+              <span class="badge badge-stu">STU</span>
+            </div>
+            <div class="card-body">
+              <div class="items-grid">
+                <div class="item"><div class="item-label">Add Production Savings</div><div class="item-sub">Document ROI</div></div>
+                <div class="item"><div class="item-label">Links to All Deliverables</div><div class="item-sub">Full artifact set</div></div>
+                <div class="item"><div class="item-label">Merge to Main</div><div class="item-sub">Git merge</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-note">
+      <strong>Note:</strong> Steps 1 and 2 may run concurrently. Step 4 Collaboration is the critical gate before merging to main — ensure all deliverables, reference links, and the lista-design branch are in place before check-in.
+    </div>
+
+  </div>
+</body>
+</html>

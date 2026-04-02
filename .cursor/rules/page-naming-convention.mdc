@@ -1,0 +1,45 @@
+---
+description: Page and step component naming conventions
+globs: ["src/pages/**"]
+alwaysApply: true
+---
+
+# Page Naming Convention
+
+Page and step component naming conventions for `src/pages/`.
+
+## Page Components
+
+- **All page components must use `Page` suffix** - `DashboardPage`, `PayrollOnboardingPage`, `SettingsPage`
+- Component files use PascalCase - `DashboardPage.tsx`, `PayrollOnboardingPage.tsx`
+
+## Step Components
+
+- **All step components must use `Step` suffix** - `WelcomeStep`, `CompanyInfoStep`, `TaxSetupStep`
+- Component files use PascalCase - `WelcomeStep.tsx`, `CompanyInfoStep.tsx`
+
+## Directory Names
+
+- **Page directories use lowercase or kebab-case** - `payroll/`, `payroll/onboarding/`, `payroll/employees/`
+- Do not use PascalCase for directories - not `PayrollOnboarding/` or `CustomerWizard/`
+- Related features can nest under a parent directory - `payroll/employees/`, `payroll/timesheets/`
+
+## Main Entry File Naming
+
+- The main entry file in a folder-based page uses a descriptive PascalCase name with `Page` suffix
+- Folder `payroll/onboarding/` -> `PayrollOnboardingPage.tsx`
+- Folder `payroll/employees/` -> `PayrollEmployeesPage.tsx`
+
+## Prohibited Names
+
+- **No generic names** - Do not use `Page.tsx`, `Index.tsx`, `Main.tsx`, or `Step.tsx` as primary identifiers
+- Do not use page or step components without the required suffix
+
+## Summary
+
+| Type        | Naming Rule    | Example                    |
+|-------------|----------------|----------------------------|
+| Page file   | PascalCase + Page | `DashboardPage.tsx`     |
+| Step file   | PascalCase + Step | `WelcomeStep.tsx`      |
+| Page folder | lowercase / kebab-case | `payroll/onboarding/`  |
+| Entry file  | PascalCase + Page | `PayrollOnboardingPage.tsx` |

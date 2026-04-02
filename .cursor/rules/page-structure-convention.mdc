@@ -1,0 +1,83 @@
+---
+description: Page structure conventions for src/pages directory
+globs: ["src/pages/**"]
+alwaysApply: true
+---
+
+# Page Structure Convention
+
+Page structure conventions for the `src/pages/` directory.
+
+## Valid Page Patterns
+
+Two valid patterns exist for application pages:
+
+### 1. Single-File Pages
+
+One `.tsx` file at the top level of `src/pages/`, named with the `Page` suffix.
+
+- Use for simple pages with minimal complexity
+- File lives directly in `src/pages/`
+- Example: `DashboardPage.tsx`, `CustomersPage.tsx`, `SettingsPage.tsx`
+
+### 2. Folder-Based Pages
+
+A directory containing a main `*Page.tsx` entry point, plus optional subdirectories.
+
+- Use for complex pages with multiple components, steps, or shared logic
+- Directory uses lowercase or kebab-case (e.g., `payroll/`, `payroll/onboarding/`)
+- Related features can nest under a parent folder (e.g., all payroll pages under `payroll/`)
+- Example: `payroll/onboarding/PayrollOnboardingPage.tsx`
+
+## Route Requirements
+
+- **All pages** (single-file or folder-based entry points) **MUST** have a corresponding route in `src/App.tsx`
+- Route imports must point to the page file directly (single-file) or the main entry file in the folder (folder-based)
+- Do not create pages without adding routes; do not remove routes without removing or deprecating the page
+
+## Examples
+
+### Single-File Pattern
+
+```
+src/pages/
+  DashboardPage.tsx
+  CustomersPage.tsx
+  SettingsPage.tsx
+```
+
+App.tsx import and route:
+
+```tsx
+import DashboardPage from "./pages/DashboardPage";
+
+<Route path="dashboard" element={<DashboardPage />} />
+```
+
+### Folder-Based Pattern
+
+```
+src/pages/
+  payroll/
+    PayrollHomePage.tsx           // Simple page at folder root
+    employees/
+      PayrollEmployeesPage.tsx    // Feature subfolder entry
+      sections/
+        PersonalInfoPage.tsx      // Deeper nesting for variants
+    onboarding/
+      PayrollOnboardingPage.tsx   // Wizard entry
+      WizardStepLayout.tsx
+      steps/
+        WelcomeStep.tsx
+        CompanyInfoStep.tsx
+```
+
+App.tsx import and route:
+
+```tsx
+import PayrollOnboardingPage from "./pages/payroll/onboarding/PayrollOnboardingPage";
+
+<Route path="payroll/setup" element={<PayrollOnboardingPage />} />
+```
+
+For detailed payroll page conventions, see the `payroll-page-structure` rule.

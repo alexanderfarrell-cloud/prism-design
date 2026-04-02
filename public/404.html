@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // SPA redirect for GitHub Pages (spa-github-pages pattern)
+    //
+    // GitHub Pages cannot serve index.html for client-side routes like
+    // /dashboard or /employees/new. When a path has no matching file,
+    // GitHub serves this 404.html instead.
+    //
+    // This script redirects to the correct index.html with the original
+    // route encoded as a query parameter. A companion script in
+    // index.html restores the URL before React mounts.
+    //
+    // Handles both main (/) and branch previews (/branches/{slug}/).
+    (function () {
+      var loc = window.location;
+      var segments = loc.pathname.split('/').filter(Boolean);
+
+      // Only treat as branch preview when "branches" is the first segment.
+      // Paths like /reports/branches/123 would otherwise mis-identify and redirect loop.
+      var base, route;
+      if (segments[0] === 'branches' && segments.length >= 2) {
+        base = '/' + segments.slice(0, 2).join('/') + '/';
+        route = segments.slice(2).join('/');
+      } else {
+        base = '/';
+        route = segments.join('/');
+      }
+
+      loc.replace(
+        loc.protocol + '//' + loc.hostname + (loc.port ? ':' + loc.port : '') +
+        base +
+        '?p=' + encodeURIComponent('/' + route) +
+        (loc.search ? '&q=' + encodeURIComponent(loc.search) : '') +
+        loc.hash
+      );
+    })();
+  </script>
+</head>
+<body>
+</body>
+</html>

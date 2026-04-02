@@ -1,0 +1,81 @@
+---
+description: Wizard/multi-step page structure conventions
+globs: ["src/pages/**"]
+alwaysApply: true
+---
+
+# Wizard Structure Convention
+
+Wizard and multi-step page structure conventions.
+
+## Overview
+
+Wizard pages use the folder-based pattern with a specific subdirectory structure. The main Page component orchestrates steps and manages wizard state.
+
+## Required Structure
+
+- **`steps/` subdirectory** - Contains all step components
+- Step components use `Step` suffix (e.g., `WelcomeStep.tsx`, `CompanyInfoStep.tsx`)
+
+## Optional Structure
+
+- **`components/`** - Shared UI components used within the wizard
+- **`hooks/`** - Custom hooks for wizard logic or step-specific behavior
+- **`types/`** - TypeScript interfaces and types for wizard data
+
+## Layout Components
+
+Shared layout components (e.g., `WizardStepLayout.tsx`, `WizardHeader.tsx`, `WizardFooter.tsx`) live at the **folder root** alongside the main Page file, not inside `steps/`.
+
+## Main Entry Page
+
+The main entry Page component:
+
+- Orchestrates step progression
+- Manages wizard state (current step, form data)
+- Renders the active step and shared layout
+- Handles navigation between steps (next, back, cancel)
+
+## Reference Example: payroll/onboarding
+
+```
+src/pages/payroll/onboarding/
+  PayrollOnboardingPage.tsx    // Main entry, orchestrates steps
+  WizardStepLayout.tsx         // Shared layout wrapper
+  WizardHeader.tsx             // Step indicator / progress
+  WizardFooter.tsx             // Next / Back / Cancel actions
+  steps/
+    WelcomeStep.tsx
+    CompanyInfoStep.tsx
+    TaxSetupStep.tsx
+    BankAccountStep.tsx
+    PayScheduleStep.tsx
+    AddEmployeeStep.tsx
+    ReviewStep.tsx
+```
+
+## Example Orchestration Pattern
+
+```tsx
+// PayrollOnboardingPage.tsx - conceptual structure
+const [currentStep, setCurrentStep] = useState(0);
+const steps = [
+  WelcomeStep,
+  CompanyInfoStep,
+  TaxSetupStep,
+  BankAccountStep,
+  PayScheduleStep,
+  AddEmployeeStep,
+  ReviewStep,
+];
+
+const ActiveStep = steps[currentStep];
+
+return (
+  <WizardStepLayout>
+    <WizardHeader currentStep={currentStep} totalSteps={steps.length} />
+    <ActiveStep onNext={handleNext} onBack={handleBack} />
+    <WizardFooter onNext={handleNext} onBack={handleBack} />
+  </WizardStepLayout>
+);
+```
