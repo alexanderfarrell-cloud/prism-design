@@ -1,5 +1,6 @@
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import ModusButton from '../components/ModusButton'
+import ModusLogo from '../components/ModusLogo'
 import { StepPanel } from './StepPanels'
 import { STEPS, isValidStepId, stepIndex } from './stepConfig'
 
@@ -28,8 +29,27 @@ export function OnboardingShell() {
     <div
       className={`flex flex-col min-h-[100svh] max-w-[480px] w-full mx-auto bg-background ${isWelcome ? '' : 'shadow-sm'}`}
     >
+      {contentOnlyHeader ? (
+        <header
+          className="shrink-0 border-b border-default bg-background px-5 py-4"
+          role="banner"
+        >
+          <ModusLogo
+            name="financials"
+            alt="Trimble Financials"
+            customClass="block h-8 w-auto max-w-full"
+          />
+        </header>
+      ) : null}
       {!contentOnlyHeader ? (
         <header className="px-7 pt-7 pb-5 border-b border-default">
+          <div className="mb-4">
+            <ModusLogo
+              name="financials"
+              alt="Trimble Financials"
+              customClass="block h-7 w-auto max-w-full"
+            />
+          </div>
           <p className="m-0 mb-2 text-xs uppercase tracking-wider text-muted-foreground">
             Onboarding prototype
           </p>

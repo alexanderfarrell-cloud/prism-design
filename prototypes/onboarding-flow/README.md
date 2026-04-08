@@ -37,7 +37,7 @@ On Windows PowerShell, if `npm` is blocked by execution policy, use `npm.cmd run
 | `src/onboarding/StepPanels.tsx` | Content for each step (forms, copy, layout) |
 | `src/onboarding/WelcomeStep.tsx` | Welcome / task list screen |
 | `src/onboarding/PersonalInfoStep.tsx` | Personal info form (second screen) |
-| `src/onboarding/TrimbleBranding.tsx` | Shared logo row |
+| `src/components/ModusLogo.tsx` | Same `ModusWcLogo` wrapper as Prism (`name="financials"`) |
 | `src/onboarding/OnboardingShell.tsx` | Progress bar, Back / Continue |
 | `src/components/ModusButton.tsx` | Same API pattern as Prism |
 | `src/App.tsx` | Routes |

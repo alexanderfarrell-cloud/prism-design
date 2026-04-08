@@ -1,13 +1,9 @@
 import { ModusWcTextInput } from '@trimble-oss/moduswebcomponents-react'
-import { TrimbleLogoRow } from './TrimbleBranding'
 
 /** Second screen — personal information (matches mobile onboarding reference). */
 export function PersonalInfoStep() {
   return (
     <div className="text-left text-foreground">
-      <div className="mb-6">
-        <TrimbleLogoRow />
-      </div>
       <h1 className="m-0 mb-2 text-base font-medium text-foreground leading-snug">
         Welcome to Trimble Financials
       </h1>

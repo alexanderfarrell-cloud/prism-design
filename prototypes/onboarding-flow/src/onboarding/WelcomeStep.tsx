@@ -1,7 +1,5 @@
 /** Welcome screen — aligned with Prism / Modus patterns (prototype). */
 
-import { TrimbleLogoRow } from './TrimbleBranding'
-
 function TaskCard({
   icon,
   title,
@@ -31,7 +29,6 @@ export function WelcomeStep() {
   return (
     <div className="text-left text-foreground">
       <header className="mb-6">
-        <TrimbleLogoRow className="mb-5" />
         <h1 className="text-2xl font-bold text-foreground mb-3 tracking-tight m-0">
           Welcome to Trimble Financials
         </h1>
