@@ -8,6 +8,14 @@ interface WizardFooterProps {
   onNext: () => void;
   isFirstScreen: boolean;
   isLastScreen: boolean;
+  /** When true, back is disabled (e.g. during an in-flight save). */
+  backDisabled?: boolean;
+  /** When true, primary forward action is disabled. */
+  nextDisabled?: boolean;
+  /** Override label for the primary forward button (default: Next / Get Started / Go to Payroll). */
+  nextLabel?: string;
+  /** When true, the last screen shows "Restart Demo" instead of "Go to Payroll". */
+  demoMode?: boolean;
 }
 
 export default function WizardFooter({
@@ -17,6 +25,10 @@ export default function WizardFooter({
   onNext,
   isFirstScreen,
   isLastScreen,
+  backDisabled = false,
+  nextDisabled = false,
+  nextLabel,
+  demoMode = false,
 }: WizardFooterProps) {
   const navigate = useNavigate();
 
@@ -43,6 +55,7 @@ export default function WizardFooter({
             icon="arrow_back"
             iconPosition="only"
             ariaLabel="Go back"
+            disabled={backDisabled}
             onButtonClick={onBack}
           />
         )}
@@ -61,9 +74,12 @@ export default function WizardFooter({
             color="primary"
             variant="filled"
             size="lg"
+            disabled={nextDisabled}
+            icon={demoMode ? "refresh" : undefined}
+            iconPosition={demoMode ? "left" : undefined}
             onButtonClick={onNext}
           >
-            Go to Payroll
+            {nextLabel ?? (demoMode ? "Restart Demo" : "Go to Payroll")}
           </ModusButton>
         ) : isFirstScreen ? (
           <ModusButton
@@ -71,9 +87,10 @@ export default function WizardFooter({
             color="primary"
             variant="filled"
             size="lg"
+            disabled={nextDisabled}
             onButtonClick={onNext}
           >
-            Get Started
+            {nextLabel ?? "Get Started"}
           </ModusButton>
         ) : (
           <ModusButton
@@ -81,9 +98,10 @@ export default function WizardFooter({
             color="primary"
             variant="filled"
             size="lg"
+            disabled={nextDisabled}
             onButtonClick={onNext}
           >
-            Next
+            {nextLabel ?? "Next"}
           </ModusButton>
         )}
       </div>

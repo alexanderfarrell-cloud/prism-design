@@ -32,6 +32,8 @@ import LaborCategoryDetailPage from "./pages/payroll/LaborCategoryDetailPage";
 import LaborTypeDetailPage from "./pages/payroll/LaborTypeDetailPage";
 import PayrollTimesheetsPage from "./pages/payroll/timesheets/PayrollTimesheetsPage";
 import PayrollOnboardingPage from "./pages/payroll/onboarding/PayrollOnboardingPage";
+import PrismOnboardingDemoPage from "./pages/onboarding/PrismOnboardingDemoPage";
+import PrismOnboardingDemoV2Page from "./pages/onboarding-v2/PrismOnboardingDemoV2Page";
 import SettingsPage from "./pages/SettingsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -47,6 +49,8 @@ function App() {
                 {showDevPanel && <Route path="/dev/*" element={<DevRoutes />} />}
 
                 <Route path="payroll/setup" element={<PayrollOnboardingPage />} />
+                <Route path="onboarding" element={<PrismOnboardingDemoPage />} />
+                <Route path="onboarding-v2" element={<PrismOnboardingDemoV2Page />} />
 
                 <Route element={<AppShell />}>
                   <Route index element={<DashboardPage />} />
