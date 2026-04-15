@@ -1,0 +1,1 @@
+import{j as a,t as c}from"./index-C2mI3RO4.js";function r({level:s,message:t="",icon:o,size:u="md",customClass:e=""}){return a.jsx(c,{level:s,message:t,icon:o,size:u,"custom-class":e})}export{r as M};
