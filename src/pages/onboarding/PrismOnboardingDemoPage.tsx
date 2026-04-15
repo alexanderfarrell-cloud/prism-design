@@ -29,7 +29,6 @@ export default function PrismOnboardingDemoPage() {
 
   const isWelcome = currentStep === Step.Welcome;
   const isDone = currentStep === Step.Done;
-  const isReview = currentStep === Step.Review;
   const isConnecting = currentStep === Step.AvalaraConnecting;
   const isFormStep = [Step.PersonalInfo, Step.Business, Step.TaxLocation].includes(currentStep);
   const FORM_STEPS = [Step.PersonalInfo, Step.Business, Step.TaxLocation, Step.Review];
