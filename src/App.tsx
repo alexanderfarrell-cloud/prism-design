@@ -34,6 +34,7 @@ import PayrollTimesheetsPage from "./pages/payroll/timesheets/PayrollTimesheetsP
 import PayrollOnboardingPage from "./pages/payroll/onboarding/PayrollOnboardingPage";
 import PrismOnboardingDemoPage from "./pages/onboarding/PrismOnboardingDemoPage";
 import PrismOnboardingDemoV2Page from "./pages/onboarding-v2/PrismOnboardingDemoV2Page";
+import PrismOnboardingDemoV3Page from "./pages/onboarding-v3/PrismOnboardingDemoV3Page";
 import SettingsPage from "./pages/SettingsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -51,6 +52,7 @@ function App() {
                 <Route path="payroll/setup" element={<PayrollOnboardingPage />} />
                 <Route path="onboarding" element={<PrismOnboardingDemoPage />} />
                 <Route path="onboarding-v2" element={<PrismOnboardingDemoV2Page />} />
+                <Route path="onboarding-v3" element={<PrismOnboardingDemoV3Page />} />
 
                 <Route element={<AppShell />}>
                   <Route index element={<DashboardPage />} />

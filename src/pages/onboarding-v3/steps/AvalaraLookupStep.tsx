@@ -20,6 +20,7 @@ export default function AvalaraLookupStep({ onComplete }: AvalaraLookupStepProps
         <div className="text-sm text-foreground leading-relaxed">
           We're looking up your Avalara account details. This should only take a moment.
         </div>
+
       </div>
 
       <div className="flex justify-center mt-4">

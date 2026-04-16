@@ -1,24 +1,30 @@
 import { useEffect } from "react";
 
-interface AvalaraLookupStepProps {
+interface AvalaraConnectingStepProps {
   onComplete: () => void;
 }
 
-export default function AvalaraLookupStep({ onComplete }: AvalaraLookupStepProps) {
+export default function AvalaraConnectingStep({ onComplete }: AvalaraConnectingStepProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onComplete();
-    }, 4000);
+    }, 5000);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-4">
-        <div className="text-xl font-bold text-foreground">Finding your account</div>
+        <div className="text-xl font-bold text-foreground">Almost there!</div>
 
         <div className="text-sm text-foreground leading-relaxed">
-          We're looking up your Avalara account details. This should only take a moment.
+          Your onboarding is now complete and our digital construction crew is hard at work
+          building your new account! It should only be a few minutes.
+        </div>
+
+        <div className="text-sm text-foreground leading-relaxed">
+          You will receive an email from our partner Avalara, once the paint is dry, so feel
+          free to grab a coffee and come back whenever you're ready.
         </div>
       </div>
 

@@ -63,7 +63,7 @@ function inferCompanyType(name: string): string {
   const suffixes = ["LLC", "Inc.", "Inc", "Corp.", "Corp", "Ltd.", "Ltd", "LLP", "LP", "PC"];
   for (const suffix of suffixes) {
     if (name.endsWith(suffix) || name.endsWith(suffix.replace(".", ""))) {
-      return suffix;
+      return suffix.endsWith(".") ? suffix : suffix;
     }
   }
   return "—";

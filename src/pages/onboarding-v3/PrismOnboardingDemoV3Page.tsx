@@ -13,7 +13,6 @@ import TaxLocationStep from "./steps/TaxLocationStep";
 import ReviewStep from "./steps/ReviewStep";
 import AvalaraConnectingStep from "./steps/AvalaraConnectingStep";
 import NexusConfirmationStep from "./steps/NexusConfirmationStep";
-import DoneStep from "./steps/DoneStep";
 
 enum Step {
   Welcome = 0,
@@ -30,39 +29,39 @@ enum Step {
   Done = 11,
 }
 
-// YES path: skip Business
+// YES path: all users fill profile first, then connect existing Avalara account
 const YES_PATH: Step[] = [
   Step.Welcome,
+  Step.PersonalInfo,
+  Step.Business,
+  Step.TaxLocation,
   Step.AvalaraQuestion,
   Step.AvalaraCredentials,
   Step.AvalaraLookup,
   Step.AvalaraCompanySelect,
-  Step.PersonalInfo,
-  Step.TaxLocation,
   Step.Review,
   Step.AvalaraConnecting,
   Step.NexusConfirmation,
-  Step.Done,
 ];
 
-// NO path: skip Credentials / Lookup / CompanySelect
+// NO path: same shared profile steps, Avalara account created from collected data
 const NO_PATH: Step[] = [
   Step.Welcome,
-  Step.AvalaraQuestion,
   Step.PersonalInfo,
   Step.Business,
   Step.TaxLocation,
+  Step.AvalaraQuestion,
   Step.Review,
   Step.AvalaraConnecting,
   Step.NexusConfirmation,
-  Step.Done,
 ];
 
 const YES_FORM_STEPS = [
+  Step.PersonalInfo,
+  Step.Business,
+  Step.TaxLocation,
   Step.AvalaraCredentials,
   Step.AvalaraCompanySelect,
-  Step.PersonalInfo,
-  Step.TaxLocation,
   Step.Review,
 ];
 
@@ -73,7 +72,7 @@ const NO_FORM_STEPS = [
   Step.Review,
 ];
 
-export default function PrismOnboardingDemoV2Page() {
+export default function PrismOnboardingDemoV3Page() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>(Step.Welcome);
   const [hasAvalaraAccount, setHasAvalaraAccount] = useState<boolean | null>(null);
@@ -85,14 +84,16 @@ export default function PrismOnboardingDemoV2Page() {
     : [undefined, undefined];
 
   const isWelcome = currentStep === Step.Welcome;
-  const isDone = currentStep === Step.Done;
+  const isDone = currentStep === Step.NexusConfirmation;
   const isConnecting = currentStep === Step.AvalaraConnecting;
   const isLookup = currentStep === Step.AvalaraLookup;
 
   const activePath = hasAvalaraAccount === true ? YES_PATH : hasAvalaraAccount === false ? NO_PATH : null;
+  // Before AvalaraQuestion is answered, use NO_FORM_STEPS as the baseline for the counter
+  // (both paths share PersonalInfo, Business, TaxLocation as the first 3 form steps)
   const formSteps = hasAvalaraAccount === true ? YES_FORM_STEPS : NO_FORM_STEPS;
 
-  const showStepCounter = activePath !== null && formSteps.includes(currentStep);
+  const showStepCounter = formSteps.includes(currentStep);
   const stepCounterIndex = formSteps.indexOf(currentStep);
 
   const isFormHeadingStep = [
@@ -107,21 +108,27 @@ export default function PrismOnboardingDemoV2Page() {
     if (isDone) {
       setCurrentStep(Step.Welcome);
       setHasAvalaraAccount(null);
+      setSelectedCompanyId("1");
       return;
     }
 
-    // Welcome always advances to the Avalara question
+    // Welcome always advances to PersonalInfo
     if (currentStep === Step.Welcome) {
-      setCurrentStep(Step.AvalaraQuestion);
+      setCurrentStep(Step.PersonalInfo);
       return;
     }
+
+    // Shared pre-branch steps (before AvalaraQuestion, activePath not yet set)
+    if (currentStep === Step.PersonalInfo) { setCurrentStep(Step.Business); return; }
+    if (currentStep === Step.Business) { setCurrentStep(Step.TaxLocation); return; }
+    if (currentStep === Step.TaxLocation) { setCurrentStep(Step.AvalaraQuestion); return; }
 
     // After AvalaraQuestion, branch based on selection
     if (currentStep === Step.AvalaraQuestion) {
       if (hasAvalaraAccount === true) {
         setCurrentStep(Step.AvalaraCredentials);
       } else if (hasAvalaraAccount === false) {
-        setCurrentStep(Step.PersonalInfo);
+        setCurrentStep(Step.Review);
       }
       return;
     }
@@ -136,9 +143,14 @@ export default function PrismOnboardingDemoV2Page() {
   const handleBack = useCallback(() => {
     if (currentStep === Step.Welcome) return;
 
-    // Back from the question screen always returns to Welcome
+    // Shared pre-branch steps (back navigation before AvalaraQuestion)
+    if (currentStep === Step.PersonalInfo) { setCurrentStep(Step.Welcome); return; }
+    if (currentStep === Step.Business) { setCurrentStep(Step.PersonalInfo); return; }
+    if (currentStep === Step.TaxLocation) { setCurrentStep(Step.Business); return; }
+
+    // Back from AvalaraQuestion always returns to TaxLocation
     if (currentStep === Step.AvalaraQuestion) {
-      setCurrentStep(Step.Welcome);
+      setCurrentStep(Step.TaxLocation);
       return;
     }
 
@@ -153,7 +165,6 @@ export default function PrismOnboardingDemoV2Page() {
   const nextLabel = () => {
     if (isDone) return "Restart Demo";
     if (currentStep === Step.Review) return "Submit";
-    if (currentStep === Step.NexusConfirmation) return "Go to dashboard";
     if (isWelcome) return "Get Started";
     return "Next";
   };
@@ -205,8 +216,6 @@ export default function PrismOnboardingDemoV2Page() {
         return <AvalaraConnectingStep onComplete={() => setCurrentStep(Step.NexusConfirmation)} />;
       case Step.NexusConfirmation:
         return <NexusConfirmationStep />;
-      case Step.Done:
-        return <DoneStep />;
       default:
         return null;
     }
