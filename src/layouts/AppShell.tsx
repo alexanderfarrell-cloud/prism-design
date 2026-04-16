@@ -45,6 +45,12 @@ const ONBOARDING_DEMO_V2_ITEM = {
   route: "/onboarding-v2",
 };
 
+const ONBOARDING_DEMO_V3_ITEM = {
+  label: "Onboarding Demo V3",
+  icon: "play",
+  route: "/onboarding-v3",
+};
+
 export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -285,6 +291,22 @@ export default function AppShell() {
               >
                 <i className="modus-icons sidebar-nav-icon">{ONBOARDING_DEMO_V2_ITEM.icon}</i>
                 <div className="sidebar-nav-label">{ONBOARDING_DEMO_V2_ITEM.label}</div>
+              </div>
+
+              <div
+                role="button"
+                tabIndex={sideNavExpanded ? 0 : -1}
+                className={`sidebar-nav-item ${isActiveRoute(ONBOARDING_DEMO_V3_ITEM.route) ? "sidebar-nav-item-active" : ""}`}
+                onClick={() => handleItemClick(ONBOARDING_DEMO_V3_ITEM.route)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleItemClick(ONBOARDING_DEMO_V3_ITEM.route);
+                  }
+                }}
+              >
+                <i className="modus-icons sidebar-nav-icon">{ONBOARDING_DEMO_V3_ITEM.icon}</i>
+                <div className="sidebar-nav-label">{ONBOARDING_DEMO_V3_ITEM.label}</div>
               </div>
 
               <div
