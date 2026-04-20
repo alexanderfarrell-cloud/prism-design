@@ -1,3 +1,5 @@
+import AvalaraAccountSelectCard from "../components/AvalaraAccountSelectCard";
+
 export interface Company {
   id: string;
   name: string;
@@ -27,27 +29,12 @@ export default function AvalaraCompanySelectStep({ selectedCompanyId, onSelect }
         {DEMO_COMPANIES.map((company) => {
           const isSelected = selectedCompanyId === company.id;
           return (
-            <div
+            <AvalaraAccountSelectCard
               key={company.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => onSelect(company.id)}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(company.id); }}}
-              className={`flex items-center justify-between rounded-xl border-2 px-4 py-4 cursor-pointer transition-all ${
-                isSelected
-                  ? "border-primary bg-primary-20"
-                  : "border-default bg-background hover:border-primary"
-              }`}
-            >
-              <div className="flex flex-col gap-0.5">
-                <div className="text-sm font-semibold text-foreground">{company.name}</div>
-                <div className="text-xs text-foreground-60">{company.location}</div>
-                <div className="text-xs text-foreground-40">Account ID: {company.accountId}</div>
-              </div>
-              {isSelected && (
-                <i className="modus-icons text-primary text-xl leading-none shrink-0">check_circle</i>
-              )}
-            </div>
+              company={company}
+              selected={isSelected}
+              onSelect={() => onSelect(company.id)}
+            />
           );
         })}
       </div>
