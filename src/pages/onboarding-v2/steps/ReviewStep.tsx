@@ -1,3 +1,11 @@
+import type { Company } from "./AvalaraCompanySelectStep";
+import AvalaraAccountSelectCard from "../components/AvalaraAccountSelectCard";
+
+export type SelectedAvalaraAccount = Pick<Company, "name" | "location" | "accountId">;
+
+/** Set to true to show the green “synced from Avalara” callout on review. */
+const SHOW_AVALARA_SYNC_BANNER = false;
+
 function FieldLabel({ children }: { children: string }) {
   return (
     <div className="text-xs font-bold text-foreground mb-0.5">{children}</div>
@@ -57,6 +65,8 @@ interface ReviewStepProps {
   companyCity?: string;
   companyState?: string;
   fromAvalara?: boolean;
+  /** Same account the user selected on the Avalara company step (Yes path) — shown for confirmation. */
+  selectedAvalaraAccount?: SelectedAvalaraAccount | null;
 }
 
 function inferCompanyType(name: string): string {
@@ -69,7 +79,13 @@ function inferCompanyType(name: string): string {
   return "—";
 }
 
-export default function ReviewStep({ companyName, companyCity, companyState, fromAvalara }: ReviewStepProps) {
+export default function ReviewStep({
+  companyName,
+  companyCity,
+  companyState,
+  fromAvalara,
+  selectedAvalaraAccount,
+}: ReviewStepProps) {
   const displayCompanyName = companyName ?? "Acme Construction LLC";
   const displayCompanyType = companyName ? inferCompanyType(companyName) : "LLC";
   const displayCity = companyCity ?? "Austin";
@@ -85,13 +101,29 @@ export default function ReviewStep({ companyName, companyCity, companyState, fro
         Click on the headers you wish to edit.
       </div>
 
-      {/* Avalara sync indicator */}
-      {fromAvalara && (
+      {SHOW_AVALARA_SYNC_BANNER && fromAvalara && (
         <div className="flex items-center gap-2.5 rounded-lg bg-success-20 border border-success px-4 py-3 mb-4">
           <i className="modus-icons text-success text-lg leading-none shrink-0">check_circle</i>
           <div className="text-sm text-foreground">
             Company details synced from your Avalara account.
           </div>
+        </div>
+      )}
+
+      {fromAvalara && selectedAvalaraAccount && (
+        <div className="mb-5">
+          <div className="text-sm font-bold text-foreground mb-2">
+            Your selected Avalara account
+          </div>
+          <div className="text-xs text-foreground-60 mb-3 -mt-1 max-w-prose">
+            The company below is the one you chose when linking your existing Avalara
+            account. It appears here for your review before you submit.
+          </div>
+          <AvalaraAccountSelectCard
+            company={selectedAvalaraAccount}
+            selected
+            asConfirmation
+          />
         </div>
       )}
 

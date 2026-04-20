@@ -199,6 +199,15 @@ export default function PrismOnboardingDemoV2Page() {
             companyCity={selectedCity}
             companyState={selectedState}
             fromAvalara={hasAvalaraAccount === true}
+            selectedAvalaraAccount={
+              hasAvalaraAccount === true && selectedCompany
+                ? {
+                    name: selectedCompany.name,
+                    location: selectedCompany.location,
+                    accountId: selectedCompany.accountId,
+                  }
+                : null
+            }
           />
         );
       case Step.AvalaraConnecting:
