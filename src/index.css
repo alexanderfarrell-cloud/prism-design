@@ -1,0 +1,687 @@
+/* Modus CSS MUST come before Tailwind */
+@import '@trimble-oss/moduswebcomponents/modus-wc-styles.css';
+@import 'tailwindcss';
+
+html, body, #root {
+  height: 100%;
+  max-height: 100dvh;
+  overflow: hidden;
+  font-family: 'Open Sans', sans-serif;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+#root > modus-wc-theme-provider {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Onboarding shell ───────────────────────────── */
+.ob-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────── */
+.ob-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.ob-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.ob-logo-icon {
+  font-size: 1.25rem;
+  color: #0063a3;
+}
+
+.ob-logo-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.ob-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ob-demo-badge {
+  padding: 0.25rem 0.875rem;
+  border: 1.5px solid #F5A300;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #F5A300;
+  background: transparent;
+}
+
+.ob-exit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #F5A300;
+  padding: 0;
+}
+
+.ob-exit-btn:hover {
+  text-decoration: underline;
+}
+
+/* ── Main scrollable content ─────────────────────── */
+.ob-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem 1.5rem 1.5rem;
+}
+
+.ob-content {
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+/* ── Bottom bar ──────────────────────────────────── */
+.ob-bottom-wrapper {
+  flex-shrink: 0;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.ob-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.5rem;
+  max-width: 480px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.ob-bottom-spacer {
+  width: 2.75rem;
+}
+
+.ob-step-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.ob-btn-back {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background-color: #F5A300;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.ob-btn-back:hover {
+  background-color: #e09500;
+}
+
+.ob-btn-next {
+  padding: 0.625rem 1.5rem;
+  border-radius: 999px;
+  background-color: #0e4c8a;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.15s;
+}
+
+.ob-btn-next:hover:not(.disabled) {
+  background-color: #0a3d70;
+}
+
+.ob-btn-next.disabled {
+  background-color: #d1d5db;
+  color: #9ca3af;
+  cursor: default;
+}
+
+/* ── Typography ──────────────────────────────────── */
+.ob-title {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.375rem;
+  line-height: 1.2;
+}
+
+.ob-title-inline {
+  margin: 0;
+}
+
+.ob-subtitle {
+  font-size: 0.9375rem;
+  color: #6b7280;
+  margin: 0 0 1.75rem;
+  line-height: 1.5;
+}
+
+.ob-subtitle-long {
+  font-size: 0.875rem;
+}
+
+.ob-body-text {
+  font-size: 0.9375rem;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Form ────────────────────────────────────────── */
+.ob-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ob-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ob-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.ob-info-icon {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  cursor: help;
+}
+
+.ob-checkbox-row {
+  margin-top: 0.25rem;
+}
+
+/* Make Modus inputs full width */
+modus-wc-text-input,
+modus-wc-select {
+  width: 100%;
+  display: block;
+}
+
+/* ── Intro step list ─────────────────────────────── */
+.ob-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ob-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.ob-step-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.ob-step-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.2rem;
+}
+
+.ob-step-desc {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Radio cards ─────────────────────────────────── */
+.ob-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.radio-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #fff;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.radio-card.selected {
+  border-color: #0063a3;
+  background-color: #f0f7ff;
+}
+
+.radio-card-input {
+  margin-top: 0.15rem;
+  accent-color: #0063a3;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.radio-card-content {
+  flex: 1;
+}
+
+.radio-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.2rem;
+}
+
+.radio-card-desc {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Selectable company cards ────────────────────── */
+.ob-selectable-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.selectable-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #fff;
+  text-align: left;
+  width: 100%;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.selectable-card.selected {
+  border-color: #0063a3;
+  background-color: #f0f7ff;
+}
+
+.selectable-card-body {
+  flex: 1;
+}
+
+.selectable-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.15rem;
+}
+
+.selectable-card-sub {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 0.1rem;
+}
+
+.selectable-card-detail {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.selectable-card-check {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: #0063a3;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+/* ── Info banner ─────────────────────────────────── */
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.info-banner.info {
+  background-color: #eff6ff;
+  color: #1e3a5f;
+}
+
+.info-banner.success {
+  background-color: #f0fdf4;
+  color: #14532d;
+  border: 1px solid #86efac;
+}
+
+.info-banner-icon {
+  font-size: 0.9375rem;
+  flex-shrink: 0;
+  margin-top: 0.0625rem;
+}
+
+.info-banner.success .info-banner-icon {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.info-banner-text {
+  flex: 1;
+}
+
+/* ── Spinner ─────────────────────────────────────── */
+@keyframes ob-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ob-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid #e5e7eb;
+  border-top-color: #0063a3;
+  border-radius: 50%;
+  animation: ob-spin 0.9s linear infinite;
+}
+
+.ob-spinner-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+/* ── Selected company reference card (review page) ── */
+.ob-selected-company-card {
+  border: 1.5px solid #0063a3;
+  border-radius: 8px;
+  background: #f0f7ff;
+  padding: 0.875rem 1rem;
+  margin: 1rem 0;
+}
+
+.ob-selected-company-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0063a3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.5rem;
+}
+
+.ob-selected-company-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ob-selected-company-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.2rem;
+}
+
+.ob-selected-company-meta {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 0.1rem;
+}
+
+.ob-selected-company-change {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0063a3;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.ob-selected-company-change:hover {
+  text-decoration: underline;
+}
+
+/* ── Review page ─────────────────────────────────── */
+.ob-review-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 1rem;
+}
+
+.ob-review-section {
+  padding-bottom: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.ob-review-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0063a3;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  text-decoration: none;
+}
+
+.ob-review-section-title:hover {
+  text-decoration: underline;
+}
+
+.ob-review-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.ob-review-grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.ob-review-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0 0 0.125rem;
+  font-weight: 500;
+}
+
+.ob-review-value {
+  font-size: 0.9375rem;
+  color: #111827;
+  margin: 0;
+}
+
+.ob-review-link {
+  color: #0063a3;
+}
+
+.ob-review-ein-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+
+.ob-ein-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #6b7280;
+  padding: 0.25rem;
+}
+
+.ob-review-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1rem 0 0.75rem;
+}
+
+/* ── Complete page ───────────────────────────────── */
+.ob-complete-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.375rem;
+}
+
+.ob-complete-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.ob-nexus-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fff;
+  margin-top: 0.5rem;
+}
+
+.ob-nexus-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.ob-nexus-badge {
+  padding: 0.2rem 0.625rem;
+  border: 1.5px solid #16a34a;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.ob-nexus-edit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #F5A300;
+  padding: 0;
+}
+
+.ob-nexus-state {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.25rem;
+}
+
+.ob-nexus-tax-type {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.ob-nexus-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+
+.ob-nexus-status-check {
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.ob-nexus-status-text {
+  font-size: 0.875rem;
+  color: #111827;
+  margin: 0;
+  font-weight: 500;
+}
+
+.ob-nexus-info {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Focus indicators ────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #0063a3;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
