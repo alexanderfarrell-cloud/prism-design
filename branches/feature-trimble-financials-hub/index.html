@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/prism-design/branches/feature-trimble-financials-hub/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trimble Financials</title>
+    <script type="module" crossorigin src="/prism-design/branches/feature-trimble-financials-hub/assets/index-ewe0ueUf.js"></script>
+    <link rel="stylesheet" crossorigin href="/prism-design/branches/feature-trimble-financials-hub/assets/index-C12sy2U6.css">
+  </head>
+  <body>
+    <script>
+      // SPA redirect restoration for GitHub Pages.
+      // Companion to 404.html — reads the encoded route from ?p= and
+      // restores the correct URL via history.replaceState before React mounts.
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var p = params.get('p');
+        if (p) {
+          var q = params.get('q');
+          var base = window.location.pathname.replace(/\/$/, '');
+          window.history.replaceState(null, '', base + p + (q || '') + window.location.hash);
+        }
+      })();
+    </script>
+    <div id="root"></div>
+  </body>
+</html>

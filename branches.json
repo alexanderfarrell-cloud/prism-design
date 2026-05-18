@@ -2,5 +2,9 @@
   "feature-payroll-onboarding-work": {
     "url": "/branches/feature-payroll-onboarding-work/",
     "branch": "feature/payroll-onboarding-work"
+  },
+  "feature-trimble-financials-hub": {
+    "url": "/branches/feature-trimble-financials-hub/",
+    "branch": "feature/trimble-financials-hub"
   }
 }
