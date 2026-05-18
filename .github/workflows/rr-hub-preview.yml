@@ -1,0 +1,120 @@
+name: RR Hub branch preview
+
+on:
+  push:
+    branches-ignore:
+      - master
+      - gh-pages
+    paths:
+      - 'recognition-recall-hub/**'
+
+concurrency:
+  group: rr-hub-preview-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      pages: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: recognition-recall-hub/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: recognition-recall-hub
+        run: npm ci
+
+      - name: Compute branch slug
+        id: branch
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          SLUG=$(echo "$BRANCH" | sed 's/[^a-zA-Z0-9_.-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
+          REPO="${{ github.event.repository.name }}"
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "base_path=/$REPO/branches/$SLUG/rr-hub/" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        working-directory: recognition-recall-hub
+        run: npm run build -- --base=${{ steps.branch.outputs.base_path }}
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy build to branch subdirectory
+        run: |
+          rm -rf gh-pages/branches/${{ steps.branch.outputs.slug }}/rr-hub
+          mkdir -p gh-pages/branches/${{ steps.branch.outputs.slug }}/rr-hub
+          cp -r recognition-recall-hub/dist/* gh-pages/branches/${{ steps.branch.outputs.slug }}/rr-hub/
+
+      - name: Push to gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add branches/${{ steps.branch.outputs.slug }}/rr-hub
+          git diff --staged --quiet || git commit -m "Deploy RR Hub branch ${{ steps.branch.outputs.name }} preview"
+          git push origin gh-pages
+
+      - name: Comment on PR with preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = '${{ steps.branch.outputs.name }}';
+            const slug = '${{ steps.branch.outputs.slug }}';
+            const repo = context.repo;
+            const { data: prs } = await github.rest.pulls.list({
+              owner: repo.owner,
+              repo: repo.repo,
+              state: 'open',
+              head: `${repo.owner}:${branch}`
+            });
+            if (prs.length === 0) return;
+            const pr = prs[0];
+            const { data: pages } = await github.rest.repos.getPages({
+              owner: repo.owner,
+              repo: repo.repo
+            });
+            const siteUrl = pages.html_url.replace(/\/$/, '');
+            const previewUrl = `${siteUrl}/branches/${slug}/rr-hub/`;
+            const marker = '<!-- rr-hub-deploy-preview -->';
+            const body = `${marker}\n**Trimble Financials preview:** ${previewUrl}`;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: pr.number
+            });
+            const existing = comments.find(c => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: repo.owner,
+                repo: repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: repo.owner,
+                repo: repo.repo,
+                issue_number: pr.number,
+                body
+              });
+            }
