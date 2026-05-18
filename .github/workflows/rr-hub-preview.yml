@@ -72,6 +72,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add branches/${{ steps.branch.outputs.slug }}/rr-hub
           git diff --staged --quiet || git commit -m "Deploy RR Hub branch ${{ steps.branch.outputs.name }} preview"
+          git pull --rebase origin gh-pages
           git push origin gh-pages
 
       - name: Comment on PR with preview URL
