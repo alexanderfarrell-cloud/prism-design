@@ -87,9 +87,10 @@ jobs:
         run: |
           BRANCH="${{ github.ref_name }}"
           SLUG=$(echo "$BRANCH" | sed 's/[^a-zA-Z0-9_.-]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
+          REPO="${{ github.event.repository.name }}"
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
           echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
-          echo "base_path=/branches/$SLUG/" >> "$GITHUB_OUTPUT"
+          echo "base_path=/$REPO/branches/$SLUG/" >> "$GITHUB_OUTPUT"
 
       - name: Build
         if: success() && steps.pr-check.outputs.skip != 'true'
@@ -111,9 +112,11 @@ jobs:
           mkdir -p gh-pages/branches/${{ steps.branch.outputs.slug }}
           cp -r dist/* gh-pages/branches/${{ steps.branch.outputs.slug }}/
 
-      - name: Deploy SPA 404.html to root
+      - name: Deploy SPA 404.html and .nojekyll to root
         if: success() && steps.pr-check.outputs.skip != 'true'
-        run: cp -f dist/404.html gh-pages/404.html
+        run: |
+          cp -f dist/404.html gh-pages/404.html
+          cp -f dist/.nojekyll gh-pages/.nojekyll
 
       - name: Update branches.json
         if: success() && steps.pr-check.outputs.skip != 'true'
@@ -135,7 +138,7 @@ jobs:
           cd gh-pages
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add branches/${{ steps.branch.outputs.slug }} branches.json 404.html
+          git add branches/${{ steps.branch.outputs.slug }} branches.json 404.html .nojekyll
           git diff --staged --quiet || git commit -m "Deploy branch ${{ steps.branch.outputs.name }} preview"
           git push origin gh-pages
 

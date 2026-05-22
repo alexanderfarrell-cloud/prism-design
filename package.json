@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "setup:onboarding": "npm install --prefix prototypes/onboarding-flow",
+    "dev:onboarding": "npm run dev --prefix prototypes/onboarding-flow",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

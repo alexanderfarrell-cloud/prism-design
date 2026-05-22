@@ -779,3 +779,22 @@ button.modus-wc-btn {
   animation: slide-in-right 0.3s ease-out;
 }
 
+/* Gear animations for Avalara connecting screen */
+@keyframes spin-cw {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes spin-ccw {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+.gear-spin-cw {
+  animation: spin-cw 6s linear infinite;
+}
+
+.gear-spin-ccw {
+  animation: spin-ccw 4s linear infinite;
+}
+

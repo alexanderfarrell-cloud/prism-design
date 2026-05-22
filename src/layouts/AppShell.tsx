@@ -19,6 +19,7 @@ const PAYROLL_ITEM = {
 
 const PAYROLL_SUBITEMS = [
   { label: "Home", route: "/payroll" },
+  { label: "Payroll setup", route: "/payroll/setup" },
   { label: "Employees", route: "/payroll/employees" },
   { label: "Timesheets", route: "/payroll/timesheets" },
   { label: "Tax Settings", route: "/payroll/tax-settings" },
@@ -30,6 +31,24 @@ const SETTINGS_ITEM = {
   label: "Settings",
   icon: "settings",
   route: "/settings",
+};
+
+const ONBOARDING_DEMO_ITEM = {
+  label: "Onboarding Demo",
+  icon: "play",
+  route: "/onboarding",
+};
+
+const ONBOARDING_DEMO_V2_ITEM = {
+  label: "Onboarding Demo V2",
+  icon: "play",
+  route: "/onboarding-v2",
+};
+
+const ONBOARDING_DEMO_V3_ITEM = {
+  label: "Onboarding Demo V3",
+  icon: "play",
+  route: "/onboarding-v3",
 };
 
 export default function AppShell() {
@@ -242,6 +261,54 @@ export default function AppShell() {
             </div>
 
             <div>
+              <div
+                role="button"
+                tabIndex={sideNavExpanded ? 0 : -1}
+                className={`sidebar-nav-item ${isActiveRoute(ONBOARDING_DEMO_ITEM.route) ? "sidebar-nav-item-active" : ""}`}
+                onClick={() => handleItemClick(ONBOARDING_DEMO_ITEM.route)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleItemClick(ONBOARDING_DEMO_ITEM.route);
+                  }
+                }}
+              >
+                <i className="modus-icons sidebar-nav-icon">{ONBOARDING_DEMO_ITEM.icon}</i>
+                <div className="sidebar-nav-label">{ONBOARDING_DEMO_ITEM.label}</div>
+              </div>
+
+              <div
+                role="button"
+                tabIndex={sideNavExpanded ? 0 : -1}
+                className={`sidebar-nav-item ${isActiveRoute(ONBOARDING_DEMO_V2_ITEM.route) ? "sidebar-nav-item-active" : ""}`}
+                onClick={() => handleItemClick(ONBOARDING_DEMO_V2_ITEM.route)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleItemClick(ONBOARDING_DEMO_V2_ITEM.route);
+                  }
+                }}
+              >
+                <i className="modus-icons sidebar-nav-icon">{ONBOARDING_DEMO_V2_ITEM.icon}</i>
+                <div className="sidebar-nav-label">{ONBOARDING_DEMO_V2_ITEM.label}</div>
+              </div>
+
+              <div
+                role="button"
+                tabIndex={sideNavExpanded ? 0 : -1}
+                className={`sidebar-nav-item ${isActiveRoute(ONBOARDING_DEMO_V3_ITEM.route) ? "sidebar-nav-item-active" : ""}`}
+                onClick={() => handleItemClick(ONBOARDING_DEMO_V3_ITEM.route)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleItemClick(ONBOARDING_DEMO_V3_ITEM.route);
+                  }
+                }}
+              >
+                <i className="modus-icons sidebar-nav-icon">{ONBOARDING_DEMO_V3_ITEM.icon}</i>
+                <div className="sidebar-nav-label">{ONBOARDING_DEMO_V3_ITEM.label}</div>
+              </div>
+
               <div
                 role="button"
                 tabIndex={sideNavExpanded ? 0 : -1}

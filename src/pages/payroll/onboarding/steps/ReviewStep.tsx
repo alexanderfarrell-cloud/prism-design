@@ -4,6 +4,8 @@ interface ReviewStepProps {
   ein: string;
   suiId: string;
   suiRate: string;
+  nexusJurisdictionName: string;
+  nexusJurisdictionCode: string;
   payFrequency: "weekly" | "biweekly";
   firstWorkDate: string;
   accountType: "checking" | "savings";
@@ -37,6 +39,11 @@ function maskAccountNumber(num: string): string {
   return "****" + num.slice(-4);
 }
 
+function formatNexusJurisdictionLine(name: string, code: string): string {
+  if (name && code) return `${name} (${code})`;
+  return name || code || "—";
+}
+
 interface SummaryCardProps {
   icon: string;
   title: string;
@@ -65,6 +72,27 @@ function SummaryCard({ icon, title, items }: SummaryCardProps) {
 }
 
 export default function ReviewStep(props: ReviewStepProps) {
+  const stateTaxItems: { label: string; value: string }[] = [
+    { label: "SUI ID", value: props.suiId || "Not provided yet" },
+    {
+      label: "SUI Rate",
+      value: props.suiRate ? `${props.suiRate}%` : "Not provided yet",
+    },
+  ];
+  if (props.nexusJurisdictionName || props.nexusJurisdictionCode) {
+    stateTaxItems.push(
+      {
+        label: "Avalara nexus (state)",
+        value: formatNexusJurisdictionLine(
+          props.nexusJurisdictionName,
+          props.nexusJurisdictionCode
+        ),
+      },
+      { label: "Tax type", value: "Sales & Use Tax" },
+      { label: "Nexus status", value: "Active in Avalara" }
+    );
+  }
+
   return (
     <div className="max-w-xl mx-auto w-full px-6">
       <div className="flex flex-col items-center mb-8">
@@ -95,13 +123,7 @@ export default function ReviewStep(props: ReviewStepProps) {
         <SummaryCard
           icon="file_secure"
           title="State Taxes"
-          items={[
-            { label: "SUI ID", value: props.suiId || "Not provided yet" },
-            {
-              label: "SUI Rate",
-              value: props.suiRate ? `${props.suiRate}%` : "Not provided yet",
-            },
-          ]}
+          items={stateTaxItems}
         />
 
         <SummaryCard

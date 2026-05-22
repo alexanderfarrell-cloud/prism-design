@@ -19,15 +19,25 @@
       var loc = window.location;
       var segments = loc.pathname.split('/').filter(Boolean);
 
-      // Only treat as branch preview when "branches" is the first segment.
-      // Paths like /reports/branches/123 would otherwise mis-identify and redirect loop.
+      // Detect branch preview base path. Handles both:
+      //   /branches/{slug}/...          (root GitHub Pages site)
+      //   /{repo}/branches/{slug}/...   (project GitHub Pages site)
       var base, route;
       if (segments[0] === 'branches' && segments.length >= 2) {
+        // Root pages site: /branches/{slug}/
         base = '/' + segments.slice(0, 2).join('/') + '/';
         route = segments.slice(2).join('/');
+      } else if (segments[1] === 'branches' && segments.length >= 3) {
+        // Project pages site: /{repo}/branches/{slug}/
+        base = '/' + segments.slice(0, 3).join('/') + '/';
+        route = segments.slice(3).join('/');
+      } else if (segments.length >= 1) {
+        // Main site with repo prefix: /{repo}/
+        base = '/' + segments[0] + '/';
+        route = segments.slice(1).join('/');
       } else {
         base = '/';
-        route = segments.join('/');
+        route = '';
       }
 
       loc.replace(

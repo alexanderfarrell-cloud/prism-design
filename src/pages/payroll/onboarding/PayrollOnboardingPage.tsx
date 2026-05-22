@@ -6,10 +6,12 @@ import WizardFooter from "./WizardFooter";
 import WelcomeStep from "./steps/WelcomeStep";
 import CompanyInfoStep from "./steps/CompanyInfoStep";
 import TaxSetupStep from "./steps/TaxSetupStep";
+import TaxNexusConfirmationStep from "./steps/TaxNexusConfirmationStep";
 import PayScheduleStep from "./steps/PayScheduleStep";
 import BankAccountStep from "./steps/BankAccountStep";
 import AddEmployeeStep from "./steps/AddEmployeeStep";
 import ReviewStep from "./steps/ReviewStep";
+import { parseJurisdictionFromAddress } from "./jurisdictionFromAddress";
 
 interface OnboardingData {
   companyName: string;
@@ -27,6 +29,8 @@ interface OnboardingData {
   employeeLastName: string;
   employeePayType: "hourly" | "salary";
   employeePayRate: string;
+  nexusJurisdictionName: string;
+  nexusJurisdictionCode: string;
 }
 
 const INITIAL_DATA: OnboardingData = {
@@ -45,25 +49,58 @@ const INITIAL_DATA: OnboardingData = {
   employeeLastName: "",
   employeePayType: "hourly",
   employeePayRate: "",
+  nexusJurisdictionName: "",
+  nexusJurisdictionCode: "",
 };
 
-const TOTAL_NUMBERED_STEPS = 5;
+const TOTAL_NUMBERED_STEPS = 6;
 
 enum WizardStep {
   Welcome = 0,
   CompanyInfo = 1,
   TaxSetup = 2,
-  PaySchedule = 3,
-  BankAccount = 4,
-  AddEmployee = 5,
-  Review = 6,
+  TaxNexusConfirmation = 3,
+  PaySchedule = 4,
+  BankAccount = 5,
+  AddEmployee = 6,
+  Review = 7,
+}
+
+function readPreviewNexusFromUrl(): boolean {
+  try {
+    return new URLSearchParams(window.location.search).get("preview") === "nexus";
+  } catch {
+    return false;
+  }
+}
+
+function initialDataForUrl(): OnboardingData {
+  if (!readPreviewNexusFromUrl()) return INITIAL_DATA;
+  const j = parseJurisdictionFromAddress(INITIAL_DATA.address);
+  return {
+    ...INITIAL_DATA,
+    nexusJurisdictionName: j.jurisdictionName,
+    nexusJurisdictionCode: j.jurisdictionCode,
+  };
+}
+
+function initialStepForUrl(): WizardStep {
+  return readPreviewNexusFromUrl()
+    ? WizardStep.TaxNexusConfirmation
+    : WizardStep.Welcome;
+}
+
+/** Replace with a real Avalara nexus-creation API call; resolves only on HTTP success. */
+async function createTaxNexusViaAvalara(): Promise<void> {
+  await new Promise((r) => setTimeout(r, 850));
 }
 
 export default function PayrollOnboardingPage() {
   usePageTitle("Payroll Setup");
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<WizardStep>(WizardStep.Welcome);
-  const [data, setData] = useState<OnboardingData>(INITIAL_DATA);
+  const [currentStep, setCurrentStep] = useState<WizardStep>(initialStepForUrl);
+  const [data, setData] = useState<OnboardingData>(initialDataForUrl);
+  const [isCreatingNexus, setIsCreatingNexus] = useState(false);
 
   const handleUpdate = useCallback(
     (field: string, value: string) => {
@@ -72,13 +109,32 @@ export default function PayrollOnboardingPage() {
     []
   );
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (currentStep === WizardStep.Review) {
       navigate("/payroll");
       return;
     }
+
+    if (currentStep === WizardStep.TaxSetup) {
+      setIsCreatingNexus(true);
+      try {
+        await createTaxNexusViaAvalara();
+        const { jurisdictionName, jurisdictionCode } =
+          parseJurisdictionFromAddress(data.address);
+        setData((prev) => ({
+          ...prev,
+          nexusJurisdictionName: jurisdictionName,
+          nexusJurisdictionCode: jurisdictionCode,
+        }));
+        setCurrentStep(WizardStep.TaxNexusConfirmation);
+      } finally {
+        setIsCreatingNexus(false);
+      }
+      return;
+    }
+
     setCurrentStep((prev) => prev + 1);
-  }, [currentStep, navigate]);
+  }, [currentStep, navigate, data.address]);
 
   const handleBack = useCallback(() => {
     if (currentStep > WizardStep.Welcome) {
@@ -91,6 +147,11 @@ export default function PayrollOnboardingPage() {
     if (currentStep >= WizardStep.Review) return 0;
     return currentStep;
   };
+
+  const nextLabelOverride =
+    currentStep === WizardStep.TaxSetup && isCreatingNexus
+      ? "Creating nexus…"
+      : undefined;
 
   const renderStep = () => {
     switch (currentStep) {
@@ -111,6 +172,13 @@ export default function PayrollOnboardingPage() {
             suiId={data.suiId}
             suiRate={data.suiRate}
             onUpdate={handleUpdate}
+          />
+        );
+      case WizardStep.TaxNexusConfirmation:
+        return (
+          <TaxNexusConfirmationStep
+            jurisdictionName={data.nexusJurisdictionName}
+            jurisdictionCode={data.nexusJurisdictionCode}
           />
         );
       case WizardStep.PaySchedule:
@@ -148,6 +216,8 @@ export default function PayrollOnboardingPage() {
             ein={data.ein}
             suiId={data.suiId}
             suiRate={data.suiRate}
+            nexusJurisdictionName={data.nexusJurisdictionName}
+            nexusJurisdictionCode={data.nexusJurisdictionCode}
             payFrequency={data.payFrequency}
             firstWorkDate={data.firstWorkDate}
             accountType={data.accountType}
@@ -173,9 +243,12 @@ export default function PayrollOnboardingPage() {
         currentStep={getNumberedStep()}
         totalSteps={TOTAL_NUMBERED_STEPS}
         onBack={handleBack}
-        onNext={handleNext}
+        onNext={() => void handleNext()}
         isFirstScreen={currentStep === WizardStep.Welcome}
         isLastScreen={currentStep === WizardStep.Review}
+        backDisabled={isCreatingNexus}
+        nextDisabled={isCreatingNexus}
+        nextLabel={nextLabelOverride}
       />
     </div>
   );
