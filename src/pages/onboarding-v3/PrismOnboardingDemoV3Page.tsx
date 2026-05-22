@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import ModusLogo from "../../components/ModusLogo";
 import ModusButton from "../../components/ModusButton";
 import WelcomeStep from "./steps/WelcomeStep";
@@ -13,6 +12,7 @@ import TaxLocationStep from "./steps/TaxLocationStep";
 import ReviewStep from "./steps/ReviewStep";
 import AvalaraConnectingStep from "./steps/AvalaraConnectingStep";
 import NexusConfirmationStep from "./steps/NexusConfirmationStep";
+import ProfileCompleteStep from "./steps/ProfileCompleteStep";
 
 enum Step {
   Welcome = 0,
@@ -23,10 +23,11 @@ enum Step {
   PersonalInfo = 5,
   Business = 6,
   TaxLocation = 7,
-  Review = 8,
-  AvalaraConnecting = 9,
-  NexusConfirmation = 10,
-  Done = 11,
+  ProfileComplete = 8,
+  Review = 9,
+  AvalaraConnecting = 10,
+  NexusConfirmation = 11,
+  Done = 12,
 }
 
 // YES path: all users fill profile first, then connect existing Avalara account
@@ -35,6 +36,7 @@ const YES_PATH: Step[] = [
   Step.PersonalInfo,
   Step.Business,
   Step.TaxLocation,
+  Step.ProfileComplete,
   Step.AvalaraQuestion,
   Step.AvalaraCredentials,
   Step.AvalaraLookup,
@@ -50,6 +52,7 @@ const NO_PATH: Step[] = [
   Step.PersonalInfo,
   Step.Business,
   Step.TaxLocation,
+  Step.ProfileComplete,
   Step.AvalaraQuestion,
   Step.Review,
   Step.AvalaraConnecting,
@@ -73,7 +76,6 @@ const NO_FORM_STEPS = [
 ];
 
 export default function PrismOnboardingDemoV3Page() {
-  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>(Step.Welcome);
   const [hasAvalaraAccount, setHasAvalaraAccount] = useState<boolean | null>(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>("1");
@@ -121,7 +123,8 @@ export default function PrismOnboardingDemoV3Page() {
     // Shared pre-branch steps (before AvalaraQuestion, activePath not yet set)
     if (currentStep === Step.PersonalInfo) { setCurrentStep(Step.Business); return; }
     if (currentStep === Step.Business) { setCurrentStep(Step.TaxLocation); return; }
-    if (currentStep === Step.TaxLocation) { setCurrentStep(Step.AvalaraQuestion); return; }
+    if (currentStep === Step.TaxLocation) { setCurrentStep(Step.ProfileComplete); return; }
+    if (currentStep === Step.ProfileComplete) { setCurrentStep(Step.AvalaraQuestion); return; }
 
     // After AvalaraQuestion, branch based on selection
     if (currentStep === Step.AvalaraQuestion) {
@@ -147,10 +150,11 @@ export default function PrismOnboardingDemoV3Page() {
     if (currentStep === Step.PersonalInfo) { setCurrentStep(Step.Welcome); return; }
     if (currentStep === Step.Business) { setCurrentStep(Step.PersonalInfo); return; }
     if (currentStep === Step.TaxLocation) { setCurrentStep(Step.Business); return; }
+    if (currentStep === Step.ProfileComplete) { setCurrentStep(Step.TaxLocation); return; }
 
-    // Back from AvalaraQuestion always returns to TaxLocation
+    // Back from AvalaraQuestion always returns to ProfileComplete hub
     if (currentStep === Step.AvalaraQuestion) {
-      setCurrentStep(Step.TaxLocation);
+      setCurrentStep(Step.ProfileComplete);
       return;
     }
 
@@ -166,6 +170,7 @@ export default function PrismOnboardingDemoV3Page() {
     if (isDone) return "Restart Demo";
     if (currentStep === Step.Review) return "Submit";
     if (isWelcome) return "Get Started";
+    if (currentStep === Step.ProfileComplete) return "Start tax setup";
     return "Next";
   };
 
@@ -197,6 +202,8 @@ export default function PrismOnboardingDemoV3Page() {
             onSelect={(id) => setSelectedCompanyId(id)}
           />
         );
+      case Step.ProfileComplete:
+        return <ProfileCompleteStep />;
       case Step.PersonalInfo:
         return <PersonalInfoStep />;
       case Step.Business:
@@ -237,22 +244,8 @@ export default function PrismOnboardingDemoV3Page() {
       <div className="w-full max-w-[480px] min-h-screen flex flex-col shadow-sm">
 
         {/* Header */}
-        <div className="border-bottom-default bg-background px-5 py-4 flex items-center justify-between shrink-0">
+        <div className="border-bottom-default bg-background px-5 py-4 flex items-center shrink-0">
           <ModusLogo name="financials" customClass="h-8 w-auto" />
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-full bg-warning-20 border border-warning px-3 py-1 text-xs font-semibold text-warning">
-              <i className="modus-icons text-sm leading-none">play</i>
-              Demo
-            </div>
-            <ModusButton
-              variant="borderless"
-              color="secondary"
-              size="sm"
-              onButtonClick={() => navigate("/dashboard")}
-            >
-              Exit
-            </ModusButton>
-          </div>
         </div>
 
         {/* Step content */}
