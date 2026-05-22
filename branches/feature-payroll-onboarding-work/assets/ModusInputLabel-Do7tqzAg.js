@@ -1,1 +1,0 @@
-import{j as r,H as n}from"./index-CfuWHtkz.js";function b({forId:s,labelText:t,subLabelText:e,required:a=!1,size:o="md",customClass:u="",children:l}){return r.jsx(n,{"for-id":s,"label-text":t,"sub-label-text":e,required:a,size:o,"custom-class":u,children:l})}export{b as M};
